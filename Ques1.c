@@ -1,8 +1,10 @@
-#include<stdio.h>
-#include<stdbool.h>
-#include<string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 
 static int ans[16]; // Storing ans of
+
 
 //Function to handle the typeA commands.
 void typeA (int opcode[], int reg1[], int reg2[], int reg3[]){
@@ -31,6 +33,7 @@ void typeA (int opcode[], int reg1[], int reg2[], int reg3[]){
     j += 3;
 
 }
+
 
 //function to handle typeC commands
 void typeC(int opcode[], int reg1[], int reg2[]){
@@ -95,25 +98,27 @@ void regBin(int bin[], char reg[]){
 
 
 int main(){
-	char dataline[100]; // To store the data of each dataline.
+	 // To store the data of each dataline.
 
 	FILE *filer, *filew;
 	filer = fopen("Assembly.txt", "r");
 	filew = fopen("Ans.txt", "w");
 
 	while(1){
+		char dataline[100];
 		fgets(dataline, 100, filer);
 		if(feof(filer)) break;
 		if (dataline){
+			
 			char opcode[4];
 			int i = 0, j = 0, k = 0;
 
 			while(dataline[i] == ' ') i++;
 			for(;dataline[i] != ' '; i++) opcode[j++] = dataline[i];
-
+			
 			opcode[j] = '\0';
-
-			if (!strcmp(opcode, "add") || !strcmp(opcode, "sub") || !strcmp(opcode, "mul") || !strcmp(opcode, "xor") || !strcmp(opcode, "or") || strcmp(opcode, "and")){
+			
+			if (!strcmp(opcode, "add") || !strcmp(opcode, "sub") || !strcmp(opcode, "mul") || !strcmp(opcode, "xor") || !strcmp(opcode, "or") || !strcmp(opcode, "and")){
 				char reg1[2], reg2[2], reg3[2];
 				int bin1[3], bin2[3], bin3[3];
 				int opcodeBin[5];
@@ -129,6 +134,7 @@ int main(){
 				while(dataline[i] == ' ') i++;
 				for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
 
+
 				while(dataline[i] == ' ') i++;
 				for(int x = 0; x < 2; x++,i++) reg2[x] = dataline[i];
 
@@ -142,12 +148,14 @@ int main(){
 				typeA(opcodeBin, bin1, bin2, bin3);
 
 				for(int x = 0; x < 16; x++){
-					fprintf(filew, "%d", ans[x]);
+					fprintf(filew,"%d", ans[x]);
 				}
-				fprintf(filew, "\n");
+
+				fprintf(filew,"\n");
+				
 			}
 
-			else if (!strcmp(opcode, "mov") || !strcmp(opcode, "div") || !strcmp(opcode, "not") || !strcmp(opcode, "cmp")){
+            else if (!strcmp(opcode, "mov") || !strcmp(opcode, "div") || !strcmp(opcode, "not") || !strcmp(opcode, "cmp")){
 				if (dataline[7]!='$'){
 				char reg1[2], reg2[2];
 				int bin1[3], bin2[3];
@@ -197,13 +205,8 @@ int main(){
 				fprintf(filew,"\n");
 
 			}
-
-
 		}
 	}
-
-
-
-
+	
     return 0;
 }

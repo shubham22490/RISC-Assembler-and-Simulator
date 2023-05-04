@@ -1,2 +1,6 @@
  add R1  R2 R3
  add R0 R1 R5
+ mov R5 R3
+ div R6 R2
+ hlt
+ 
