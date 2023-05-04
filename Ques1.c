@@ -156,7 +156,11 @@ int main(){
 			}
 
             else if (!strcmp(opcode, "mov") || !strcmp(opcode, "div") || !strcmp(opcode, "not") || !strcmp(opcode, "cmp")){
-				if (dataline[7]!='$'){
+				
+  				char * ch;
+  				ch=strchr(dataline,'$');
+  				if (ch==NULL)
+				{
 				char reg1[2], reg2[2];
 				int bin1[3], bin2[3];
 				int opcodeBin[5];
