@@ -32,6 +32,41 @@ void typeA (int opcode[], int reg1[], int reg2[], int reg3[]){
 
 }
 
+//function to handle typeC commands
+void typeC(int opcode[], int reg1[], int reg2[]){
+	for (int i = 0; i < 5; i++){
+        ans[i] = opcode[i];
+    }
+
+	ans[5] = 0; ans[6] = 0; ans[7] = 0; ans[8] = 0; ans[9] = 0;
+
+	int j = 10;
+
+    for (int i = 0; i < 3; i++){
+        ans[j+i] = reg1[i];
+    }
+    j += 3;
+
+	for (int i = 0; i < 3; i++){
+        ans[j+i] = reg2[i];
+    }
+    j += 3;
+
+}
+
+//function to handle typeF commands
+void typeF(int opcode[]){
+	
+	for (int i = 0; i < 5; i++){
+        ans[i] = opcode[i];
+    }
+
+	for(int i=5; i<16; i++){
+		ans[i]=0;
+	}
+}
+
+
 //Function to convert number to binary in specific number of bits.
 int toBin(int var[], int n, int bits){
     for(int i = 0; i < bits; i++){
@@ -110,6 +145,57 @@ int main(){
 					fprintf(filew, "%d", ans[x]);
 				}
 				fprintf(filew, "\n");
+			}
+
+			else if (!strcmp(opcode, "mov") || !strcmp(opcode, "div") || !strcmp(opcode, "not") || !strcmp(opcode, "cmp")){
+				if (dataline[7]!='$'){
+				char reg1[2], reg2[2];
+				int bin1[3], bin2[3];
+				int opcodeBin[5];
+				
+				if (!strcmp(opcode, "mov")) toBin(opcodeBin, 3, 5);
+				else if (!strcmp(opcode, "div")) toBin(opcodeBin, 7, 5);
+				else if (!strcmp(opcode, "not")) toBin(opcodeBin, 13, 5);
+				else if (!strcmp(opcode, "cmp")) toBin(opcodeBin, 14, 5);
+				
+				while(dataline[i] == ' ') i++;
+				for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
+				
+
+				while(dataline[i] == ' ') i++;
+				for(int x = 0; x < 2; x++,i++) reg2[x] = dataline[i];
+				
+				
+
+				regBin(bin1, reg1);
+				regBin(bin2, reg2);
+
+				typeC(opcodeBin, bin1, bin2);
+
+
+				for(int x = 0; x < 16; x++){
+					fprintf(filew,"%d", ans[x]);
+				}
+				
+				fprintf(filew,"\n");
+			}
+			}
+
+			else if (!strcmp(opcode, "hlt\n")){
+				
+				int opcodeBin[5];
+
+				toBin(opcodeBin, 26, 5);
+
+				typeF(opcodeBin);
+
+				for(int x = 0; x < 16; x++){
+					fprintf(filew, "%d", ans[x]);
+				}
+				
+
+				fprintf(filew,"\n");
+
 			}
 
 
