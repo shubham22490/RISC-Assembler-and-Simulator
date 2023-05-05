@@ -35,6 +35,28 @@ void typeA (int opcode[], int reg1[], int reg2[], int reg3[]){
 }
 
 
+void  typeb(int opcode[], int reg1[], int a){
+    for(int i = 0; i < 5; i++){
+        ans[i] = opcode[i];
+    }
+
+    ans[5]=0;
+
+    int j = 6;
+    for(int i = 0; i < 3; i++){
+        ans[j+i] = reg1[i];
+        }
+
+    int brr[7];
+
+    toBin(brr,a,7);
+
+    for(int i=9;i<16;i++){
+        ans[i]=brr[i-9];
+    }
+
+}
+
 //function to handle typeC commands
 void typeC(int opcode[], int reg1[], int reg2[]){
 	for (int i = 0; i < 5; i++){
@@ -56,6 +78,29 @@ void typeC(int opcode[], int reg1[], int reg2[]){
     j += 3;
 
 }
+
+
+
+void  typed(int opcode[], int reg1[], int mem_addr[]){
+    for(int i = 0; i < 5; i++){
+        ans[i] = opcode[i];
+    }
+
+    ans[5]=0;
+
+    int j = 6;
+    for(int i = 0; i < 3; i++){
+        ans[j+i] = reg1[i];
+        }
+
+    j +=3; 
+
+    for(int i=0;i<7;i++){
+        ans[j+i]=mem_addr[i];
+    }
+
+}
+
 
 //function to handle typeF commands
 void typeF(int opcode[]){
