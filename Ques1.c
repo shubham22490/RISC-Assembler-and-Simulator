@@ -68,6 +68,24 @@ void typeF(int opcode[]){
 		ans[i]=0;
 	}
 }
+//function to handle typeE commands
+void typeE(int opcode[],int binaryvalue[])
+{
+    for (int i = 0; i < 5; i++){
+        ans[i] = opcode[i];
+    }
+
+	for(int i=5; i<9; i++){
+		ans[i]=0;
+	}
+
+    for(int i=0;i<7;i++)
+    {
+        ans[i+9]=binaryvalue[i];
+    }
+
+    
+}
 
 
 //Function to convert number to binary in specific number of bits.
@@ -95,7 +113,42 @@ void regBin(int bin[], char reg[]){
 	int num = reg[1] - '0';
 	toBin(bin, num, 3);
 }
+//Function to caluclate the line number at which label is present
+int check(char arr[])
+{
+    FILE *file1r;
+    file1r = fopen("Assembly.txt", "r");
+    int lin_check=0,flag=0;
+    int len=strlen(arr);
+    while(flag==0)
+    {
+        char dataline[100];
+		fgets(dataline, 100, file1r);
+        lin_check++;
+        int set=0;
+        for(int i=0;i<len;i++)
+        {
+            set=0;
+            if (dataline[i]==arr[i])
+            {
+                continue;
+            }
+            else
+            {
+                set=1;
+                break;
+            }
+        }
+        if (set==0)
+        {
+            flag=1;
+        
+        }
 
+    }
+    return lin_check;
+    
+}
 
 int main(){
 	 // To store the data of each dataline.
@@ -103,15 +156,34 @@ int main(){
 	FILE *filer, *filew;
 	filer = fopen("Assembly.txt", "r");
 	filew = fopen("Ans.txt", "w");
+    int count=0,count_list[100][2],count_list_index=0;
 
 	while(1){
+
 		char dataline[100];
 		fgets(dataline, 100, filer);
-		if(feof(filer)) break;
+        
+		
+        count++;
+        int i = 0, j = 0, k = 0,flag=0,index;
+        for(index=0;index<count_list_index;index++)
+        {
+            if (count==count_list[index][0])
+            {
+                flag=1;
+                break;
+            }
+        }
+        if (flag==1)
+        {
+            i+=count_list[index][1];
+            i++;
+            
+        }
 		if (dataline){
 			
 			char opcode[4];
-			int i = 0, j = 0, k = 0;
+			
 
 			while(dataline[i] == ' ') i++;
 			for(;dataline[i] != ' '; i++) opcode[j++] = dataline[i];
@@ -193,7 +265,7 @@ int main(){
 			}
 			}
 
-			else if (!strcmp(opcode, "hlt\n")){
+			else if ((!strcmp(opcode, "hlt\n")) || ((!strcmp(opcode, "hlt\0")))){
 				
 				int opcodeBin[5];
 
@@ -209,8 +281,49 @@ int main(){
 				fprintf(filew,"\n");
 
 			}
+            else if (!strcmp(opcode, "jmp") || !strcmp(opcode, "jlt") || !strcmp(opcode, "jgt") || !strcmp(opcode ,"je"))
+			{
+				int opcodeBin[5];
+				if (!strcmp(opcode, "jmp")) toBin(opcodeBin,15,5);
+				else if (!strcmp(opcode, "jlt")) toBin(opcodeBin,28,5);
+				else if (!strcmp(opcode, "jgt")) toBin(opcodeBin,29,5);
+				else if (!strcmp(opcode, "je")) toBin(opcodeBin,31,5);
+                i++;
+                char label[50];
+                int x=0;
+                while(dataline[i] == ' ') i++;
+                //for(;dataline[i] != ' '; i++) label[x++] = dataline[i];
+                for(int y=i;(dataline[y]!='\n');y++)
+                {
+                    label[x]=dataline[y];
+                    x++;
+
+                }
+                label[x]='\0';
+                int line_num=check(label);
+                count_list[count_list_index][0]=line_num;
+                count_list[count_list_index][1]=x;
+                count_list_index++;
+                int mem1[7];
+                toBin(mem1,line_num,7);
+                typeE(opcodeBin,mem1);
+                for(int x = 0; x < 16; x++){
+					fprintf(filew, "%d", ans[x]);
+				}
+				
+
+				fprintf(filew,"\n");
+
+
+
+				
+
+
+			}
 		}
+        if(feof(filer)) break;
 	}
+
 	
     return 0;
 }
