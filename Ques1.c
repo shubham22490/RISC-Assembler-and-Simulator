@@ -34,6 +34,28 @@ void typeA (int opcode[], int reg1[], int reg2[], int reg3[]){
 
 }
 
+//function to handle typeb commands
+void  typeb(int opcode[], int reg1[], int binary[]){
+    for(int i = 0; i < 5; i++){
+        ans[i] = opcode[i];
+    }
+
+    ans[5]=0;
+
+    int j = 6;
+    for(int i = 0; i < 3; i++){
+        ans[j+i] = reg1[i];
+        }
+
+    j+=3;
+
+
+    for(int i=0;i<7;i++){
+        ans[i+j]=binary[i];
+    }
+    j+=7;
+
+}
 
 //function to handle typeC commands
 void typeC(int opcode[], int reg1[], int reg2[]){
@@ -54,26 +76,6 @@ void typeC(int opcode[], int reg1[], int reg2[]){
         ans[j+i] = reg2[i];
     }
     j += 3;
-
-}
-
-void  typed(int opcode[], int reg1[], int mem_addr[]){
-    for(int i = 0; i < 5; i++){
-        ans[i] = opcode[i];
-    }
-
-    ans[5]=0;
-
-    int j = 6;
-    for(int i = 0; i < 3; i++){
-        ans[j+i] = reg1[i];
-        }
-
-    j +=3; 
-
-    for(int i=0;i<7;i++){
-        ans[j+i]=mem_addr[i];
-    }
 
 }
 
@@ -133,15 +135,6 @@ void regBin(int bin[], char reg[]){
 	int num = reg[1] - '0';
 	toBin(bin, num, 3);
 }
-
-//Function to convert memory to binary
-void memBin(int bin[], char mem[]){
-
-	int num = mem[1] - '0';
-	toBin(bin, num, 7);
-}
-
-
 //Function to caluclate the line number at which label is present
 int check(char arr[])
 {
@@ -256,6 +249,41 @@ int main(){
 				
 			}
 
+            else if (!strcmp(opcode, "mov") || !strcmp(opcode,"rs")|| !strcmp(opcode,"ls")){
+				
+  				char * ch;
+  				ch=strchr(dataline,'$');
+  				if (ch!=NULL){
+                    int value = atoi(ch + 1);
+                    if(value>0 && value < 128){
+                        int bin2[7];
+                        toBin(bin2,value,7);
+				        char reg1[2];
+				        int bin1[3];
+				        int opcodeBin[5];
+				        
+				        if (!strcmp(opcode, "mov")) toBin(opcodeBin, 2, 5);
+                        else if (!strcmp(opcode, "rs")) toBin(opcodeBin, 8, 5);
+				        else if (!strcmp(opcode, "ls")) toBin(opcodeBin, 9, 5);
+				        
+				        while(dataline[i] == ' ') i++;
+				        for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
+        
+				        regBin(bin1, reg1);
+        
+				        typeb(opcodeBin, bin1, bin2);
+        
+        
+				        for(int x = 0; x < 16; x++){
+				        	fprintf(filew,"%d", ans[x]);
+				        }
+				        
+				        fprintf(filew,"\n");
+                    }
+			    }
+            }
+			
+
             else if (!strcmp(opcode, "mov") || !strcmp(opcode, "div") || !strcmp(opcode, "not") || !strcmp(opcode, "cmp")){
 				
   				char * ch;
@@ -294,37 +322,6 @@ int main(){
 			}
 			}
 
-
-            else if ( !strcmp(opcode, "ld") || !strcmp(opcode, "st") ){
-				char reg1[2], mem[2];
-				int bin1[3], bin2[3];
-				int opcodeBin[5];
-
-				if (!strcmp(opcode, "ld")) toBin(opcodeBin, 4, 5);
-				else if (!strcmp(opcode, "st")) toBin(opcodeBin, 5, 5);
-				
-
-
-				while(dataline[i] == ' ') i++;
-				for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
-
-
-				while(dataline[i] == ' ') i++;
-				for(int x = 0; x < 2; x++,i++) mem[x] = dataline[i];
-
-				regBin(bin1, reg1);
-				memBin(bin2, mem);
-
-				typed(opcodeBin, bin1, bin2);
-
-				for(int x = 0; x < 16; x++){
-					fprintf(filew,"%d", ans[x]);
-				}
-
-				fprintf(filew,"\n");
-				
-			}
-
 			else if ((!strcmp(opcode, "hlt\n")) || ((!strcmp(opcode, "hlt\0")))){
 				
 				int opcodeBin[5];
@@ -341,8 +338,6 @@ int main(){
 				fprintf(filew,"\n");
 
 			}
-
-
             else if (!strcmp(opcode, "jmp") || !strcmp(opcode, "jlt") || !strcmp(opcode, "jgt") || !strcmp(opcode ,"je"))
 			{
 				int opcodeBin[5];
