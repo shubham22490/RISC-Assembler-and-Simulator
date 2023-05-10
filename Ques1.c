@@ -34,6 +34,28 @@ void typeA (int opcode[], int reg1[], int reg2[], int reg3[]){
 
 }
 
+//function to handle typeb commands
+void  typeb(int opcode[], int reg1[], int binary[]){
+    for(int i = 0; i < 5; i++){
+        ans[i] = opcode[i];
+    }
+
+    ans[5]=0;
+
+    int j = 6;
+    for(int i = 0; i < 3; i++){
+        ans[j+i] = reg1[i];
+        }
+
+    j+=3;
+
+
+    for(int i=0;i<7;i++){
+        ans[i+j]=binary[i];
+    }
+    j+=7;
+
+}
 
 //function to handle typeC commands
 void typeC(int opcode[], int reg1[], int reg2[]){
@@ -152,17 +174,21 @@ int check(char arr[])
 
 int main(){
 	 // To store the data of each dataline.
+    printf("Starting the Program: \n");
 
 	FILE *filer, *filew;
 	filer = fopen("Assembly.txt", "r");
 	filew = fopen("Ans.txt", "w");
     int count=0,count_list[100][2],count_list_index=0;
 
+    printf("Checkpoint 1\n");
+
 	while(1){
 
 		char dataline[100];
 		fgets(dataline, 100, filer);
-        
+        if(feof(filer)) break;
+        printf("Dataline\n");
 		
         count++;
         int i = 0, j = 0, k = 0,flag=0,index;
@@ -187,7 +213,9 @@ int main(){
 
 			while(dataline[i] == ' ') i++;
 			for(;dataline[i] != ' '; i++) opcode[j++] = dataline[i];
-			
+			char * ch;
+            ch=strchr(dataline,'$');
+
 			opcode[j] = '\0';
 			
 			if (!strcmp(opcode, "add") || !strcmp(opcode, "sub") || !strcmp(opcode, "mul") || !strcmp(opcode, "xor") || !strcmp(opcode, "or") || !strcmp(opcode, "and")){
@@ -227,12 +255,43 @@ int main(){
 				
 			}
 
-            else if (!strcmp(opcode, "mov") || !strcmp(opcode, "div") || !strcmp(opcode, "not") || !strcmp(opcode, "cmp")){
+            else if ((!strcmp(opcode, "mov") && ch != NULL) || !strcmp(opcode,"rs")|| !strcmp(opcode,"ls") ){
 				
-  				char * ch;
-  				ch=strchr(dataline,'$');
-  				if (ch==NULL)
-				{
+
+                int value = atoi(ch + 1);
+                if(value>0 && value < 128){
+                    int bin2[7];
+                    toBin(bin2,value,7);
+                    char reg1[2];
+                    int bin1[3];
+                    int opcodeBin[5];
+
+                    if (!strcmp(opcode, "mov")) toBin(opcodeBin, 2, 5);
+                    else if (!strcmp(opcode, "rs")) toBin(opcodeBin, 8, 5);
+                    else if (!strcmp(opcode, "ls")) toBin(opcodeBin, 9, 5);
+
+                    while(dataline[i] == ' ') i++;
+                    for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
+
+                    regBin(bin1, reg1);
+
+                    typeb(opcodeBin, bin1, bin2);
+
+
+                    for(int x = 0; x < 16; x++){
+                        fprintf(filew,"%d", ans[x]);
+                    }
+
+                    fprintf(filew,"\n");
+                }
+
+            }
+			
+
+            else if ( (!strcmp(opcode, "mov") && ch == NULL) || !strcmp(opcode, "div") || !strcmp(opcode, "not") || !strcmp(opcode, "cmp") ){
+				
+
+
 				char reg1[2], reg2[2];
 				int bin1[3], bin2[3];
 				int opcodeBin[5];
@@ -262,10 +321,10 @@ int main(){
 				}
 				
 				fprintf(filew,"\n");
-			}
+
 			}
 
-			else if ((!strcmp(opcode, "hlt\n")) || ((!strcmp(opcode, "hlt\0")))){
+			else if (!strcmp(opcode, "hlt\n")) {
 				
 				int opcodeBin[5];
 
@@ -305,7 +364,7 @@ int main(){
                 count_list[count_list_index][1]=x;
                 count_list_index++;
                 int mem1[7];
-                toBin(mem1,line_num,7);
+                toBin(mem1,line_num-1,7);
                 typeE(opcodeBin,mem1);
                 for(int x = 0; x < 16; x++){
 					fprintf(filew, "%d", ans[x]);
@@ -314,14 +373,8 @@ int main(){
 
 				fprintf(filew,"\n");
 
-
-
-				
-
-
 			}
 		}
-        if(feof(filer)) break;
 	}
 
 	
