@@ -148,6 +148,13 @@ void typeC(int opcode[], int reg1[], int reg2[]){
 
 }
 
+void typeD(int opcode[], int reg[], int binary[]){
+    for(int i = 0; i < 5; i++) ans[i] = opcode[i];
+    ans[5] = 0;
+    for(int i = 0; i < 3; i++) ans[i+6] = reg[i];
+    for(int i = 0; i < 7; i++) ans[i+9] = binary[i];
+}
+
 //function to handle typeF commands
 void typeF(int opcode[]){
 	
@@ -161,7 +168,7 @@ void typeF(int opcode[]){
 }
 //function to handle typeE commands
 void typeE(int opcode[],int binaryvalue[])
-{
+ {
     for (int i = 0; i < 5; i++){
         ans[i] = opcode[i];
     }
@@ -250,7 +257,7 @@ void initial(){
 
             if(ch == NULL){
                 if(!strcmp(first_word, "var")){
-                    raiseError("All variables are not initialized in beginning.");
+                    raiseError("Variables not declared at the beginning.");
                     break;
                 }
             }
@@ -464,6 +471,45 @@ int main(){
 
 
                     fprintf(filew,"\n");
+
+                }
+
+                else if(!strcmp(opcode, "ld") || !strcmp(opcode, "st")){
+                    char reg1[2];
+                    int bin1[3];
+
+                    int opcodeBin[5];
+                    if(!strcmp(opcode, "ld")) toBin(opcodeBin, 4, 5);
+                    else if(!strcmp(opcode, "st")) toBin(opcodeBin, 5, 5);
+
+                    while(dataline[i] == ' ') i++;
+                    for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
+                    regBin(bin1, reg1);
+
+                    char variable[50];
+                    int x=0;
+                    while(dataline[i] == ' ') i++;
+                    //for(;dataline[i] != ' '; i++) variable[x++] = dataline[i];
+
+                    for(int y=i;(dataline[y]!='\n');y++) variable[x++]=dataline[y];
+                    variable[x]='\0';
+
+                    int valVar = checkMember(headVar, variable);
+                    if (valVar == -1){
+                        fclose(filew);
+                        raiseError("Usage of Invalid Variable!");
+                    }
+                    int mem[7];
+                    toBin(mem, valVar, 7);
+
+                    typeD(opcodeBin,bin1, mem);
+                    for(int x = 0; x < 16; x++){
+                        fprintf(filew, "%d", ans[x]);
+                    }
+
+
+                    fprintf(filew,"\n");
+
 
                 }
             }
