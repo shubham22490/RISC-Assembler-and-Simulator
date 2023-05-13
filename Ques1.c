@@ -21,6 +21,7 @@ void create(node ** head, char varname[], int num)
 
     strcpy(temp->var, varname);
     temp->num = num;
+    temp->next=NULL;
     // printf("%s\n", temp->var);
 
     if (*head == NULL){
@@ -39,7 +40,9 @@ void create(node ** head, char varname[], int num)
 
 void initvars(node* head, int num){
     node *temp = head;
+    
     while(temp){
+        
         temp->num = num++;
         temp = temp->next;
     }
@@ -148,12 +151,15 @@ void typeC(int opcode[], int reg1[], int reg2[]){
 
 }
 
+
+//function to handle typeD commands
 void typeD(int opcode[], int reg[], int binary[]){
     for(int i = 0; i < 5; i++) ans[i] = opcode[i];
     ans[5] = 0;
     for(int i = 0; i < 3; i++) ans[i+6] = reg[i];
     for(int i = 0; i < 7; i++) ans[i+9] = binary[i];
 }
+
 
 //function to handle typeF commands
 void typeF(int opcode[]){
@@ -215,7 +221,8 @@ void regBin(int bin[], char reg[]){
 void raiseError(char error[], int lineNum){
     FILE *filew;
     filew = fopen("Ans.txt", "w");
-    fprintf(filew, "Error in line %d: %s", lineNum, error);
+    if(lineNum) fprintf(filew, "Error in line %d: %s", lineNum, error);
+    else fprintf(filew, "Error: %s", error);
     fclose(filew);
     errorFlag = 1;
 }
@@ -230,64 +237,94 @@ void initial(){
     int flag = 0;
 
     while(1){
+        
         i = 0, j = 0;
         char dataline[100];
         fgets(dataline, 100, filer);
         if(feof(filer)) break;
         lineCount++;
 
-
+        
+        
         if(strcmp(dataline, "\n")){
+            
             char first_word[50];
             while(dataline[i] == ' ') i++;
 			for(;dataline[i] != ' '; i++) first_word[j++] = dataline[i];
             first_word[j] = '\0';
 
             if(!strcmp(first_word, "var") && !flag){
+                
                 char second[50];
                 j = 0;
                 while(dataline[i] == ' ') i++;
                 for(;dataline[i] != '\n'; i++) second[j++] = dataline[i];
                 second[j] = '\0';
+                
                 create(&headVar, second, 0);
+                
                 continue;
             }
+            
             flag = 1;
             char * ch;
+            
             ch = strchr(dataline,':');
 
             if(ch == NULL){
+                
                 if(!strcmp(first_word, "var")){
+                    
                     raiseError("Variables not declared at the beginning.", lineCount);
+                    
                     break;
                 }
+
             }
 
             else{
+                
                 j = 0, i=0;
                 while(dataline[i] == ' ') i++;
                 for(; dataline[i] != ':'; i++) first_word[j++] = dataline[i];
                 first_word[j] = '\0';
                 create(&headLabel, first_word, count);
             }
-
+            
             count ++;
 
         }
+        
     }
 
     initvars(headVar, count);
+    
     fclose(filer);
 }
 
+
+int typo_reg(char reg[]){   // for checking typo error in registers.
+    if (reg[0]!='R' || reg[1]=='7' || reg[1]=='8'|| reg[1]=='9' ){
+        return 1;
+    }
+
+    else{
+        return 0;
+    }
+}
+
+
 int main(){
 	 // To store the data of each dataline.
-    printf("Starting the Program: \n");
-
+    
     initial(); //Checks and stores all the labels and variables.
 
+    int hlt_error=0; int hlt_error2=0;
 
+    
     if(!errorFlag){
+        
+        
         FILE *filer, *filew;
         filer = fopen("Assembly.txt", "r");
         filew = fopen("Ans.txt", "w");
@@ -295,6 +332,7 @@ int main(){
 
         static int lineCount;
         while(!errorFlag){
+            
 
             char dataline[100];
             fgets(dataline, 100, filer);
@@ -316,10 +354,12 @@ int main(){
                 while(dataline[i] == ' ') i++;
                 for(;dataline[i] != ' '; i++) opcode[j++] = dataline[i];
 
-                ch=strchr(dataline,'$');
+                ch = strchr(dataline,'$');
 
                 opcode[j] = '\0';
 
+                if(!strcmp(opcode, "var")) continue;
+                
                 //To handle the bin code of TypeA Commands
                 if (!strcmp(opcode, "add") || !strcmp(opcode, "sub") || !strcmp(opcode, "mul") || !strcmp(opcode, "xor") || !strcmp(opcode, "or") || !strcmp(opcode, "and")){
                     char reg1[2], reg2[2], reg3[2];
@@ -344,6 +384,16 @@ int main(){
                     while(dataline[i] == ' ') i++;
                     for(int x = 0; x < 2; x++,i++) reg3[x] = dataline[i];
 
+                    if (typo_reg(reg1) || typo_reg(reg2) || typo_reg(reg3)){
+                            fclose(filew);
+                            raiseError("Typo in register!", lineCount);
+                    }
+
+                    if(dataline[i] != '\n'){
+                      fclose(filew);
+                      raiseError("Unnecessary elements in the instruction!", lineCount);
+                    }
+
                     regBin(bin1, reg1);
                     regBin(bin2, reg2);
                     regBin(bin3, reg3);
@@ -360,8 +410,8 @@ int main(){
 
                 else if ((!strcmp(opcode, "mov") && ch != NULL) || !strcmp(opcode,"rs")|| !strcmp(opcode,"ls") ){
 
-
                     int value = atoi(ch + 1);
+
                     if(value>0 && value < 128){
                         int bin2[7];
                         toBin(bin2,value,7);
@@ -376,6 +426,20 @@ int main(){
                         while(dataline[i] == ' ') i++;
                         for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
 
+                        i = ch-dataline+1;
+                        for(; dataline[i] != ' ' && dataline[i]!='\n' && dataline[i]!='\0'; i++);
+
+                        if (typo_reg(reg1)==1){
+                            fclose(filew);
+                            raiseError("Typo in register!", lineCount);
+                        }
+
+                        if(dataline[i] != '\n'){
+                            fclose(filew);
+                            raiseError("Unnecessary elements in the instruction!", lineCount);
+                        }
+
+
                         regBin(bin1, reg1);
 
                         typeb(opcodeBin, bin1, bin2);
@@ -388,11 +452,17 @@ int main(){
                         fprintf(filew,"\n");
                     }
 
+                    else{
+
+                        fclose(filew);
+                        raiseError("Illegal immediate value!", lineCount);
+
+                    }
+
                 }
 
 
                 else if ( (!strcmp(opcode, "mov") && ch == NULL) || !strcmp(opcode, "div") || !strcmp(opcode, "not") || !strcmp(opcode, "cmp") ){
-
 
 
                     char reg1[2], reg2[2];
@@ -411,7 +481,15 @@ int main(){
                     while(dataline[i] == ' ') i++;
                     for(int x = 0; x < 2; x++,i++) reg2[x] = dataline[i];
 
-
+                    if (typo_reg(reg1)==1 || typo_reg(reg2)==1){
+                        fclose(filew);
+                        raiseError("Typo in register!", lineCount);
+                    }
+                    
+                    if(dataline[i] != '\n'){
+                            fclose(filew);
+                            raiseError("Unnecessary elements in the instruction!", lineCount);
+                    }
 
                     regBin(bin1, reg1);
                     regBin(bin2, reg2);
@@ -428,10 +506,11 @@ int main(){
                 }
 
                 else if (!strcmp(opcode, "hlt\n")) {
-
+                    hlt_error2=1;
                     int opcodeBin[5];
 
                     toBin(opcodeBin, 26, 5);
+
 
                     typeF(opcodeBin);
 
@@ -439,10 +518,21 @@ int main(){
                         fprintf(filew, "%d", ans[x]);
                     }
 
-
                     fprintf(filew,"\n");
 
+                    while(!errorFlag){
+                        char line[100];
+                        fgets(line, 100, filer);
+                        if(feof(filer)) break;
+                        if(!strcmp(line, "\n")) continue;
+                        hlt_error = 1;
+                        errorFlag = 1;
+                        break;
+                    }
+
                 }
+
+                
                 else if (!strcmp(opcode, "jmp") || !strcmp(opcode, "jlt") || !strcmp(opcode, "jgt") || !strcmp(opcode ,"je"))
                 {
                     int opcodeBin[5];
@@ -519,10 +609,25 @@ int main(){
 
 
                 }
+
+                else{
+                   fclose(filew);
+                   raiseError("Typo in instruction!", lineCount);
+                }
             }
+        }
+
+
+        if(hlt_error2==0 && errorFlag==0){
+            fclose(filew);
+            raiseError("Halt instruction is missing!", 0);
+        }
+
+        else if (hlt_error==1){
+            fclose(filew);
+            raiseError("Halt instruction is not last!", lineCount);
         }
     }
 
-	
     return 0;
 }
