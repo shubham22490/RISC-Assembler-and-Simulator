@@ -212,10 +212,10 @@ void regBin(int bin[], char reg[]){
 	toBin(bin, num, 3);
 }
 
-void raiseError(char error[]){
+void raiseError(char error[], int lineNum){
     FILE *filew;
     filew = fopen("Ans.txt", "w");
-    fprintf(filew, "Error: %s", error);
+    fprintf(filew, "Error in line %d: %s", lineNum, error);
     fclose(filew);
     errorFlag = 1;
 }
@@ -224,7 +224,7 @@ void initial(){
 
     FILE *filer;
     filer = fopen("Assembly.txt", "r");
-    int count = 0;
+    int count = 0, lineCount = 0;
 
     int i, j;
     int flag = 0;
@@ -234,6 +234,7 @@ void initial(){
         char dataline[100];
         fgets(dataline, 100, filer);
         if(feof(filer)) break;
+        lineCount++;
 
 
         if(strcmp(dataline, "\n")){
@@ -257,7 +258,7 @@ void initial(){
 
             if(ch == NULL){
                 if(!strcmp(first_word, "var")){
-                    raiseError("Variables not declared at the beginning.");
+                    raiseError("Variables not declared at the beginning.", lineCount);
                     break;
                 }
             }
@@ -284,7 +285,6 @@ int main(){
     printf("Starting the Program: \n");
 
     initial(); //Checks and stores all the labels and variables.
-    printLinked(headLabel);
 
 
     if(!errorFlag){
@@ -293,22 +293,29 @@ int main(){
         filew = fopen("Ans.txt", "w");
 
 
-
+        static int lineCount;
         while(!errorFlag){
 
             char dataline[100];
             fgets(dataline, 100, filer);
             if(feof(filer)) break;
+            lineCount++;
 
             int i = 0, j = 0, k = 0;
 
             if (strcmp(dataline, "\n")){
 
+                char * ch;
+                ch=strchr(dataline,':');
+
+                if(ch) i = ch-dataline+1;
+
+
                 char opcode[4];
 
                 while(dataline[i] == ' ') i++;
                 for(;dataline[i] != ' '; i++) opcode[j++] = dataline[i];
-                char * ch;
+
                 ch=strchr(dataline,'$');
 
                 opcode[j] = '\0';
@@ -459,7 +466,7 @@ int main(){
                     int line_num = checkMember(headLabel, label);
                     if(line_num == -1){
                         fclose(filew);
-                        raiseError("Using undefined labels!");
+                        raiseError("Using undefined labels!", lineCount);
                     }
 
                     int mem1[7];
@@ -497,7 +504,7 @@ int main(){
                     int valVar = checkMember(headVar, variable);
                     if (valVar == -1){
                         fclose(filew);
-                        raiseError("Usage of Invalid Variable!");
+                        raiseError("Usage of Invalid Variable!", lineCount);
                     }
                     int mem[7];
                     toBin(mem, valVar, 7);
