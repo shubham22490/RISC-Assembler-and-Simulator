@@ -21,6 +21,7 @@ void create(node ** head, char varname[], int num)
 
     strcpy(temp->var, varname);
     temp->num = num;
+    temp->next=NULL;
     // printf("%s\n", temp->var);
 
     if (*head == NULL){
@@ -148,12 +149,15 @@ void typeC(int opcode[], int reg1[], int reg2[]){
 
 }
 
+
+//function to handle typeD commands
 void typeD(int opcode[], int reg[], int binary[]){
     for(int i = 0; i < 5; i++) ans[i] = opcode[i];
     ans[5] = 0;
     for(int i = 0; i < 3; i++) ans[i+6] = reg[i];
     for(int i = 0; i < 7; i++) ans[i+9] = binary[i];
 }
+
 
 //function to handle typeF commands
 void typeF(int opcode[]){
@@ -215,10 +219,12 @@ void regBin(int bin[], char reg[]){
 void raiseError(char error[], int lineNum){
     FILE *filew;
     filew = fopen("Ans.txt", "w");
-    fprintf(filew, "Error in line %d: %s", lineNum, error);
+    if (lineNum) fprintf(filew, "Error in line %d: %s", lineNum, error);
+    else fprintf(filew, "Error: %s", error);
     fclose(filew);
     errorFlag = 1;
 }
+
 
 void initial(){
 
@@ -280,12 +286,24 @@ void initial(){
     fclose(filer);
 }
 
+
+int typo_reg(char reg[]){   // for checking typo error in registers.
+    if (reg[0]!='R' || reg[1]=='7' || reg[1]=='8'|| reg[1]=='9' ){
+        return 1;
+    }
+
+    else{
+        return 0;
+    }
+}
+
+
 int main(){
 	 // To store the data of each dataline.
-    printf("Starting the Program: \n");
-
+ 
     initial(); //Checks and stores all the labels and variables.
 
+    int hlt_error=0; int hlt_error2=0;
 
     if(!errorFlag){
         FILE *filer, *filew;
@@ -319,7 +337,8 @@ int main(){
                 ch=strchr(dataline,'$');
 
                 opcode[j] = '\0';
-
+                if(!strcmp(opcode, "var")) continue;
+                
                 //To handle the bin code of TypeA Commands
                 if (!strcmp(opcode, "add") || !strcmp(opcode, "sub") || !strcmp(opcode, "mul") || !strcmp(opcode, "xor") || !strcmp(opcode, "or") || !strcmp(opcode, "and")){
                     char reg1[2], reg2[2], reg3[2];
@@ -343,6 +362,16 @@ int main(){
 
                     while(dataline[i] == ' ') i++;
                     for(int x = 0; x < 2; x++,i++) reg3[x] = dataline[i];
+
+                    if (typo_reg(reg1)==1 || typo_reg(reg2)==1 || typo_reg(reg3)==1 ){
+                            fclose(filew);
+                            raiseError("Typo in register!", lineCount);
+                    }
+
+                    if(dataline[i] != '\n'){
+                      fclose(filew);
+                      raiseError("Unnecessary elements in the instruction!", lineCount);
+                    }
 
                     regBin(bin1, reg1);
                     regBin(bin2, reg2);
@@ -376,6 +405,19 @@ int main(){
                         while(dataline[i] == ' ') i++;
                         for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
 
+                        i = ch-dataline+1;
+                        for(; dataline[i] != ' ' && dataline[i]!='\n' && dataline[i] != '\0'; i++) continue;
+
+                        if (typo_reg(reg1)==1){
+                            fclose(filew);
+                            raiseError("Typo in register!", lineCount);
+                        }
+
+                        if(dataline[i] != '\n'){
+                            fclose(filew);
+                            raiseError("Unnecessary elements in the instruction!", lineCount);
+                        }
+
                         regBin(bin1, reg1);
 
                         typeb(opcodeBin, bin1, bin2);
@@ -386,6 +428,13 @@ int main(){
                         }
 
                         fprintf(filew,"\n");
+                    }
+
+                    else{
+
+                        fclose(filew);
+                        raiseError("Illegal immediate value!", lineCount);
+
                     }
 
                 }
@@ -411,7 +460,16 @@ int main(){
                     while(dataline[i] == ' ') i++;
                     for(int x = 0; x < 2; x++,i++) reg2[x] = dataline[i];
 
+                    if (typo_reg(reg1)==1 || typo_reg(reg2)==1){
+                        fclose(filew);
+                        raiseError("Typo in register!", lineCount);
+                    }
 
+                    if(dataline[i] != '\n'){
+                            fclose(filew);
+                            raiseError("Unnecessary elements in the instruction!", lineCount);
+                    }
+                    
 
                     regBin(bin1, reg1);
                     regBin(bin2, reg2);
@@ -428,7 +486,7 @@ int main(){
                 }
 
                 else if (!strcmp(opcode, "hlt\n")) {
-
+                    hlt_error2=1;
                     int opcodeBin[5];
 
                     toBin(opcodeBin, 26, 5);
@@ -439,10 +497,21 @@ int main(){
                         fprintf(filew, "%d", ans[x]);
                     }
 
-
                     fprintf(filew,"\n");
 
+                    while(!errorFlag){
+                        char dataline[100];
+                        fgets(dataline, 100, filer);
+                        if(feof(filer)) break;
+                        if(!strcmp(dataline, "\n")) continue;
+                        hlt_error = 1;
+                        errorFlag = 1;
+                        break;
+                    }
+
                 }
+
+                
                 else if (!strcmp(opcode, "jmp") || !strcmp(opcode, "jlt") || !strcmp(opcode, "jgt") || !strcmp(opcode ,"je"))
                 {
                     int opcodeBin[5];
@@ -519,10 +588,25 @@ int main(){
 
 
                 }
+
+                else{
+                   fclose(filew);
+                   raiseError("Typo in instruction!", lineCount); 
+                }
             }
+        }
+
+
+        if(hlt_error2==0 && errorFlag==0){
+            fclose(filew);
+            raiseError("Halt instruction is missing!", 0);
+        }
+
+        else if (hlt_error){
+            fclose(filew);
+            raiseError("Halt instruction is not last!", lineCount);
         }
     }
 
-	
     return 0;
 }
