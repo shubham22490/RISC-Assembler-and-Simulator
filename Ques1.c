@@ -212,6 +212,7 @@ int toBin(int var[], int n, int bits){
 //Function to convert register to binary
 void regBin(int bin[], char reg[]){
 
+
 	int num = reg[1] - '0';
 	toBin(bin, num, 3);
 }
@@ -258,6 +259,7 @@ void initial(){
                 create(&headVar, second, 0);
                 continue;
             }
+
             flag = 1;
             char * ch;
             ch = strchr(dataline,':');
@@ -283,6 +285,7 @@ void initial(){
     }
 
     initvars(headVar, count);
+
     fclose(filer);
 }
 
@@ -391,7 +394,7 @@ int main(){
 
 
                     int value = atoi(ch + 1);
-                    if(value>0 && value < 128){
+                    if(value >=0 && value < 128){
                         int bin2[7];
                         toBin(bin2,value,7);
                         char reg1[2];
@@ -456,11 +459,26 @@ int main(){
                     while(dataline[i] == ' ') i++;
                     for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
 
-
                     while(dataline[i] == ' ') i++;
-                    for(int x = 0; x < 2; x++,i++) reg2[x] = dataline[i];
+                    int isFlag = 0;
+                    if(strstr(dataline+i, "FLAGS")) {
 
-                    if (typo_reg(reg1)==1 || typo_reg(reg2)==1){
+                            bin2[0] = 1;
+                            bin2[1] = 1;
+                            bin2[2] = 1;
+                            isFlag = 1;
+                            i = i+5;
+
+                    }
+                    if(!isFlag) for(int x = 0; x < 2; x++,i++) reg2[x] = dataline[i];
+
+                    if(isFlag && strcmp(opcode, "mov")) {
+                        fclose(filew);
+                        raiseError("Invalid use of FLAGS register.", lineCount);
+                    }
+
+                    if (typo_reg(reg1)==1 || (typo_reg(reg2)==1)){
+                        if(isFlag) goto next;
                         fclose(filew);
                         raiseError("Typo in register!", lineCount);
                     }
@@ -469,10 +487,11 @@ int main(){
                             fclose(filew);
                             raiseError("Unnecessary elements in the instruction!", lineCount);
                     }
-                    
 
+
+                    next:
                     regBin(bin1, reg1);
-                    regBin(bin2, reg2);
+                    if(!isFlag) regBin(bin2, reg2);
 
                     typeC(opcodeBin, bin1, bin2);
 
@@ -533,10 +552,17 @@ int main(){
                     label[x]='\0';
 
                     int line_num = checkMember(headLabel, label);
-                    if(line_num == -1){
+                    int valVar = checkMember(headVar, label);
+                    if(line_num == -1 && valVar == -1){
                         fclose(filew);
                         raiseError("Using undefined labels!", lineCount);
                     }
+
+                    else if (line_num == -1 && valVar != -1){
+                        fclose(filew);
+                        raiseError("Usage of Varible as Label!", lineCount);
+                    }
+
 
                     int mem1[7];
                     toBin(mem1,line_num,7);
@@ -571,10 +597,17 @@ int main(){
                     variable[x]='\0';
 
                     int valVar = checkMember(headVar, variable);
-                    if (valVar == -1){
+                    int valLabel = checkMember(headLabel, variable);
+                    if (valVar == -1 && valLabel == -1){
                         fclose(filew);
                         raiseError("Usage of Invalid Variable!", lineCount);
                     }
+
+                    else if (valVar == -1 && valLabel != -1){
+                        fclose(filew);
+                        raiseError("Usage of Label as Variable!", lineCount);
+                    }
+
                     int mem[7];
                     toBin(mem, valVar, 7);
 
