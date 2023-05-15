@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static char error_list[130][100];
+static char error_list[131][100];
 //defining a new data type node
 typedef struct node
 {
@@ -552,7 +552,7 @@ int main(){
 
                     fprintf(filew,"\n");
 
-                    while(!errorFlag){
+                    while(1){
                         char dataline[100];
                         fgets(dataline, 100, filer);
                         if(feof(filer)) break;
