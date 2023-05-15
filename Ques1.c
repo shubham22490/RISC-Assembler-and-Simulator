@@ -49,21 +49,23 @@ void initvars(node* head, int num){
 }
 
 int checkMember(node** head, char variable[]){
+    printf("%s\n", variable);
     int flag = 0;
+    int ans = -1;
     node* ptr;
     ptr = (node *)malloc(sizeof(node));
     if(*head != NULL){
-
         node* ptr = *head;
         while(ptr){
             if(!strcmp(ptr->var, variable)){
+                ans = ptr->num;
                 flag = 1;
                 break;
             }
             ptr = ptr->next;
         }
     }
-    if(flag) return ptr->num;
+    if(flag) return ans;
     return -1;
 }
 
@@ -317,6 +319,8 @@ int main(){
  
     initial(); //Checks and stores all the labels and variables.
     int hlt_error=0; int hlt_error2=0;
+
+    printLinked(headVar);
 
 
     if(!errorFlag){
