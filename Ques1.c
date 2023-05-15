@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-
+static char error_list[130][100];
 
 typedef struct node
 {
@@ -49,7 +49,7 @@ void initvars(node* head, int num){
 }
 
 int checkMember(node** head, char variable[]){
-    printf("%s\n", variable);
+    
     int flag = 0;
     int ans = -1;
     node* ptr;
@@ -74,10 +74,10 @@ void printLinked(node* head){
         node *temp = head;
 
         while(temp){
-            printf("%s %d\n", temp->var, temp->num);
+            //printf("%s %d\n", temp->var, temp->num);
             temp = temp->next;
         }
-        printf("\n");
+        //printf("\n");
     }
 }
 
@@ -229,11 +229,11 @@ void regBin(int bin[], char reg[]){
 }
 
 void raiseError(char error[], int lineNum){
-    FILE *filew;
-    filew = fopen("Ans.txt", "w");
-    if (lineNum) fprintf(filew, "Error in line %d: %s", lineNum, error);
-    else fprintf(filew, "Error: %s", error);
-    fclose(filew);
+
+    
+    if(lineNum) strcpy(error_list[lineNum], error);
+    else strcpy(error_list[130], error);
+    
     errorFlag = 1;
 }
 
@@ -280,7 +280,7 @@ void initial(){
             if(ch == NULL){
                 if(!strcmp(first_word, "var")){
                     raiseError("Variables not declared at the beginning.", lineCount);
-                    break;
+                    
                 }
             }
 
@@ -318,19 +318,19 @@ int main(){
 	 // To store the data of each dataline.
  
     initial(); //Checks and stores all the labels and variables.
-    int hlt_error=0; int hlt_error2=0;
+    int hlt_error=0; int hlt_error2=0; int hlthlt=0;
 
     printLinked(headVar);
 
 
-    if(!errorFlag){
+    
         FILE *filer, *filew;
         filer = fopen("Assembly.txt", "r");
         filew = fopen("Ans.txt", "w");
 
 
         static int lineCount;
-        while(!errorFlag){
+        while(1){
 
             char dataline[100];
             fgets(dataline, 100, filer);
@@ -384,12 +384,12 @@ int main(){
                     for(int x = 0; x < 2; x++,i++) reg3[x] = dataline[i];
 
                     if (typo_reg(reg1)==1 || typo_reg(reg2)==1 || typo_reg(reg3)==1 ){
-                            fclose(filew);
-                            raiseError("Typo in register!", lineCount);
+                            
+                            raiseError("Either typo in register(s) or register(s) not defined!", lineCount);
                     }
 
                     if(dataline[i] != '\n'){
-                      fclose(filew);
+                      
                       raiseError("Unnecessary elements in the instruction!", lineCount);
                     }
 
@@ -429,12 +429,12 @@ int main(){
                         for(; dataline[i] != ' ' && dataline[i]!='\n' && dataline[i] != '\0'; i++) continue;
 
                         if (typo_reg(reg1)==1){
-                            fclose(filew);
-                            raiseError("Typo in register!", lineCount);
+                            
+                            raiseError("Either typo in register(s) or register(s) not defined!", lineCount);
                         }
 
                         if(dataline[i] != '\n'){
-                            fclose(filew);
+                            
                             raiseError("Unnecessary elements in the instruction!", lineCount);
                         }
 
@@ -452,7 +452,7 @@ int main(){
 
                     else{
 
-                        fclose(filew);
+                        
                         raiseError("Illegal immediate value!", lineCount);
 
                     }
@@ -490,18 +490,18 @@ int main(){
                     if(!isFlag) for(int x = 0; x < 2; x++,i++) reg2[x] = dataline[i];
 
                     if(isFlag && strcmp(opcode, "mov")) {
-                        fclose(filew);
+                        
                         raiseError("Invalid use of FLAGS register.", lineCount);
                     }
 
                     if (typo_reg(reg1)==1 || (typo_reg(reg2)==1)){
                         if(isFlag) goto next;
-                        fclose(filew);
-                        raiseError("Typo in register!", lineCount);
+                       
+                        raiseError("Either typo in register(s) or register(s) not defined!", lineCount);
                     }
 
                     if(dataline[i] != '\n'){
-                            fclose(filew);
+                            
                             raiseError("Unnecessary elements in the instruction!", lineCount);
                     }
 
@@ -541,6 +541,7 @@ int main(){
                         if(feof(filer)) break;
                         if(!strcmp(dataline, "\n")) continue;
                         hlt_error = 1;
+                        hlthlt=lineCount;
                         errorFlag = 1;
                         break;
                     }
@@ -572,12 +573,12 @@ int main(){
                     int valVar = checkMember(&headVar, label);
                     // printf("%d %d", line_num, valVar);
                     if(line_num == -1 && valVar == -1){
-                        fclose(filew);
+                        
                         raiseError("Using undefined labels!", lineCount);
                     }
 
                     else if (line_num == -1 && valVar != -1){
-                        fclose(filew);
+                        
                         raiseError("Usage of Varible as Label!", lineCount);
                     }
 
@@ -617,12 +618,12 @@ int main(){
                     int valVar = checkMember(&headVar, variable);
                     int valLabel = checkMember(&headLabel, variable);
                     if (valVar == -1 && valLabel == -1){
-                        fclose(filew);
+                        
                         raiseError("Usage of Invalid Variable!", lineCount);
                     }
 
                     else if (valVar == -1 && valLabel != -1){
-                        fclose(filew);
+                        
                         raiseError("Usage of Label as Variable!", lineCount);
                     }
 
@@ -641,23 +642,39 @@ int main(){
                 }
 
                 else{
-                   fclose(filew);
+                   
                    raiseError("Typo in instruction!", lineCount); 
                 }
             }
         }
 
 
-        if(hlt_error2==0 && errorFlag==0){
-            fclose(filew);
+        if(hlt_error2==0){
+            
             raiseError("Halt instruction is missing!", 0);
         }
 
         else if (hlt_error){
-            fclose(filew);
-            raiseError("Halt instruction is not last!", lineCount);
+            
+            raiseError("Halt instruction is not last!", hlthlt);
         }
+    
+
+    fclose(filew);
+    if(errorFlag==1){
+        FILE *filew;
+        filew = fopen("Ans.txt", "w");
+        for(int i=0; i<=130; i++){
+            if(strcmp(error_list[i], "")){
+
+                if(i==130) fprintf(filew, "Error: %s\n", error_list[i]);
+                else fprintf(filew, "Error in line %d: %s\n", i, error_list[i]);
+
+            }
+        }
+        fclose(filew);
     }
 
     return 0;
+   
 }
