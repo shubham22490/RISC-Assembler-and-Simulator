@@ -6,7 +6,7 @@
 
 typedef struct node
 {
-    char var[100];
+    char var[50];
     int num;
     struct node* next;
 }node;
@@ -39,35 +39,46 @@ void create(node ** head, char varname[], int num)
 }
 
 void initvars(node* head, int num){
-    node *temp = head;
-    while(temp){
-        temp->num = num++;
-        temp = temp->next;
+    if(head != NULL){
+        node *temp = head;
+        while(temp){
+            temp->num = num++;
+            temp = temp->next;
+        }
     }
 }
 
-int checkMember(node* head, char var[]){
-    node* ptr = head;
+int checkMember(node** head, char variable[]){
+    printf("%s\n", variable);
     int flag = 0;
-    while(ptr){
-        if(!strcmp(ptr->var, var)){
-            flag = 1;
-            break;
+    int ans = -1;
+    node* ptr;
+    ptr = (node *)malloc(sizeof(node));
+    if(*head != NULL){
+        node* ptr = *head;
+        while(ptr){
+            if(!strcmp(ptr->var, variable)){
+                ans = ptr->num;
+                flag = 1;
+                break;
+            }
+            ptr = ptr->next;
         }
-        ptr = ptr->next;
     }
-    if(flag) return ptr->num;
+    if(flag) return ans;
     return -1;
 }
 
 void printLinked(node* head){
-    node *temp = head;
+    if(head != NULL){
+        node *temp = head;
 
-    while(temp){
-        printf("%s %d\n", temp->var, temp->num);
-        temp = temp->next;
+        while(temp){
+            printf("%s %d\n", temp->var, temp->num);
+            temp = temp->next;
+        }
+        printf("\n");
     }
-    printf("\n");
 }
 
 
@@ -247,19 +258,21 @@ void initial(){
         if(strcmp(dataline, "\n")){
             char first_word[50];
             while(dataline[i] == ' ') i++;
-			for(;dataline[i] != ' '; i++) first_word[j++] = dataline[i];
+			for(;dataline[i] != ' ' && dataline[i] != '\n' && dataline[i] != '\0'; i++) first_word[j++] = dataline[i];
             first_word[j] = '\0';
 
-            if(!strcmp(first_word, "var") && !flag){
-                char second[50];
-                j = 0;
-                while(dataline[i] == ' ') i++;
-                for(;dataline[i] != '\n'; i++) second[j++] = dataline[i];
-                second[j] = '\0';
-                create(&headVar, second, 0);
-                continue;
-            }
 
+            if (strlen(first_word) == 3){
+                if(!strcmp(first_word, "var") && !flag){
+                    char second[50];
+                    j = 0;
+                    while(dataline[i] == ' ' || dataline[i] == '\t') i++;
+                    for(;dataline[i] != '\n'; i++) second[j++] = dataline[i];
+                    second[j] = '\0';
+                    create(&headVar, second, 0);
+                    continue;
+                }
+            }
             flag = 1;
             char * ch;
             ch = strchr(dataline,':');
@@ -305,8 +318,10 @@ int main(){
 	 // To store the data of each dataline.
  
     initial(); //Checks and stores all the labels and variables.
-
     int hlt_error=0; int hlt_error2=0;
+
+    printLinked(headVar);
+
 
     if(!errorFlag){
         FILE *filer, *filew;
@@ -319,6 +334,7 @@ int main(){
 
             char dataline[100];
             fgets(dataline, 100, filer);
+            // printf("%s", dataline);
             if(feof(filer)) break;
             lineCount++;
 
@@ -327,16 +343,17 @@ int main(){
             if (strcmp(dataline, "\n")){
 
                 char * ch;
-                ch=strchr(dataline,':');
+                ch = strchr(dataline,':');
 
-                if(ch) i = ch-dataline+1;
+                if(ch) {
+                    i = ch-dataline+1;
+                }
 
 
                 char opcode[4];
 
-                while(dataline[i] == ' ') i++;
-                for(;dataline[i] != ' '; i++) opcode[j++] = dataline[i];
-
+                while(dataline[i] == ' ' || dataline[i] == '\t') i++;
+                for(;dataline[i] != ' ' && j != 3; i++) opcode[j++] = dataline[i];
                 ch=strchr(dataline,'$');
 
                 opcode[j] = '\0';
@@ -504,7 +521,7 @@ int main(){
 
                 }
 
-                else if (!strcmp(opcode, "hlt\n")) {
+                else if (!strcmp(opcode, "hlt")) {
                     hlt_error2=1;
                     int opcodeBin[5];
 
@@ -551,8 +568,9 @@ int main(){
                     }
                     label[x]='\0';
 
-                    int line_num = checkMember(headLabel, label);
-                    int valVar = checkMember(headVar, label);
+                    int line_num = checkMember(&headLabel, label);
+                    int valVar = checkMember(&headVar, label);
+                    // printf("%d %d", line_num, valVar);
                     if(line_num == -1 && valVar == -1){
                         fclose(filew);
                         raiseError("Using undefined labels!", lineCount);
@@ -596,8 +614,8 @@ int main(){
                     for(int y=i;(dataline[y]!='\n');y++) variable[x++]=dataline[y];
                     variable[x]='\0';
 
-                    int valVar = checkMember(headVar, variable);
-                    int valLabel = checkMember(headLabel, variable);
+                    int valVar = checkMember(&headVar, variable);
+                    int valLabel = checkMember(&headLabel, variable);
                     if (valVar == -1 && valLabel == -1){
                         fclose(filew);
                         raiseError("Usage of Invalid Variable!", lineCount);
