@@ -264,7 +264,7 @@ void initial(){
                 if(!strcmp(first_word, "var") && !flag){
                     char second[50];
                     j = 0;
-                    while(dataline[i] == ' ') i++;
+                    while(dataline[i] == ' ' || dataline[i] == '\t') i++;
                     for(;dataline[i] != '\n'; i++) second[j++] = dataline[i];
                     second[j] = '\0';
                     create(&headVar, second, 0);
@@ -348,7 +348,7 @@ int main(){
 
                 char opcode[4];
 
-                while(dataline[i] == ' ') i++;
+                while(dataline[i] == ' ' || dataline[i] == '\t') i++;
                 for(;dataline[i] != ' ' && j != 3; i++) opcode[j++] = dataline[i];
                 ch=strchr(dataline,'$');
 
