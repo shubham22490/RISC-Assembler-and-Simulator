@@ -334,6 +334,8 @@ int main(){
         FILE *filer, *filew;
         filer = fopen("Assembly.txt", "r");
         filew = fopen("Ans.txt", "w");
+	char dataline[100];
+	int hltFlag = 0;
 
 
         static int lineCount;
@@ -342,11 +344,13 @@ int main(){
 	    //code runs untill the break statement.       
 
 
-            char dataline[100];
-            fgets(dataline, 100, filer);
-            // printf("%s", dataline);
-            if(feof(filer)) break;
-            lineCount++;
+            if(hltFlag == 0){
+		    fgets(dataline, 100, filer);
+		    // printf("%s", dataline);
+		    if(feof(filer)) break;
+		    lineCount++;
+	    }
+	    htlFlag = 0;
 
             int i = 0, j = 0, k = 0;
 
@@ -553,10 +557,12 @@ int main(){
                     fprintf(filew,"\n");
 
                     while(1){
-                        char dataline[100];
+                        
                         fgets(dataline, 100, filer);
+			linCount++;
                         if(feof(filer)) break;
                         if(!strcmp(dataline, "\n")) continue;
+			hltFlag = 1;
                         hlt_error = 1;
                         hlthlt=lineCount;
                         errorFlag = 1;
