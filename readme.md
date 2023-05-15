@@ -1,8 +1,11 @@
-Assembly Code Conversion
+**Assembly Code Conversion**
+
 The program is designed to take input in assembly code from a file named Assembly.txt and write
 the corresponding machine language for the instructions in a file names Ans.txt.
 
-File Structure
+
+**File Structure**
+
 The code consists of the following files:
 • main.c: Contains the main program logic and functions for parsing andconverting
 assembly code.
@@ -10,7 +13,9 @@ assembly code.
 • Assembly.txt: Input file containing the assembly code.
 • Ans.txt: Output file where the machine code will be written.
 
-Supported Instructions
+
+**Supported Instructions**
+
 The program supports the following assembly instructions:
 • Type A Instructions: add, sub, mul, xor, or, and
 • Type B Instructions: mov, rs, ls
@@ -19,14 +24,20 @@ The program supports the following assembly instructions:
 • Type E Instructions: jmp, jlt, jgt, je, hltwith binary values
 • Type F Instructions: hlt
 
-Usage
+
+**Usage**
+
+
 To use the program, follow these steps:
 1. Firstly we need to initialize a file Assembly.txt which has the assembly level
 instructions encoded in it.
 2. Secondly, we compile the main function and store the corresponding machine code in
 Ans.txt file that is created.
 
-Error Handling
+
+**Error Handling**
+
+
 The program performs basic error handling and provides error messages in the following cases:
 • Typo in register name: If there is a typo in the register name used in the assembly code,the
 program will raise this error.
