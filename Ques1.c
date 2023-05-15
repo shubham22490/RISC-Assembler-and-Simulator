@@ -350,7 +350,7 @@ int main(){
 		    if(feof(filer)) break;
 		    lineCount++;
 	    }
-	    htlFlag = 0;
+	    hltFlag = 0;
 
             int i = 0, j = 0, k = 0;
 
@@ -559,7 +559,7 @@ int main(){
                     while(1){
                         
                         fgets(dataline, 100, filer);
-			linCount++;
+			lineCount++;
                         if(feof(filer)) break;
                         if(!strcmp(dataline, "\n")) continue;
 			hltFlag = 1;
