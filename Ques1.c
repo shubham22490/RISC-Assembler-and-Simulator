@@ -3,17 +3,17 @@
 #include <string.h>
 
 static char error_list[130][100];
-
+//defining a new data type node
 typedef struct node
 {
     char var[50];
     int num;
     struct node* next;
 }node;
-
+//defining heads of two linked lists one to store variables second to store labels
 node* headVar = NULL;
 node* headLabel = NULL;
-
+//function to create a linked list as well as add new members to the existing ones
 void create(node ** head, char varname[], int num)
 {
     node* temp;
@@ -37,7 +37,7 @@ void create(node ** head, char varname[], int num)
         ptr->next = temp;
     }
 }
-
+//funxtion to assign memory locations to variables
 void initvars(node* head, int num){
     if(head != NULL){
         node *temp = head;
@@ -47,7 +47,7 @@ void initvars(node* head, int num){
         }
     }
 }
-
+//checks if the variables are previously defined or not or if the labels are initialised or not
 int checkMember(node** head, char variable[]){
     
     int flag = 0;
@@ -68,7 +68,7 @@ int checkMember(node** head, char variable[]){
     if(flag) return ans;
     return -1;
 }
-
+//for debugging purpose(check all members of linked list)
 void printLinked(node* head){
     if(head != NULL){
         node *temp = head;
@@ -81,9 +81,9 @@ void printLinked(node* head){
     }
 }
 
-
+//final answer storing list
 static int ans[16]; // Storing ans of each data line
-
+//to check whether error exists or not (=1 means error exists)
 static int errorFlag;
 
 
@@ -227,7 +227,7 @@ void regBin(int bin[], char reg[]){
 	int num = reg[1] - '0';
 	toBin(bin, num, 3);
 }
-
+//if error exists this will close file reading and write the error in a new file 
 void raiseError(char error[], int lineNum){
 
     
@@ -237,12 +237,14 @@ void raiseError(char error[], int lineNum){
     errorFlag = 1;
 }
 
-
+//stores all the initialised variables and intialised labels
 void initial(){
 
     FILE *filer;
     filer = fopen("Assembly.txt", "r");
     int count = 0, lineCount = 0;
+	//count only counts those lines which have instruction codes 
+	//lineCount counts all instruction lines as well as blanks
 
     int i, j;
     int flag = 0;
@@ -252,10 +254,13 @@ void initial(){
         char dataline[100];
         fgets(dataline, 100, filer);
         if(feof(filer)) break;
+	//checks if file end has been reached or not
         lineCount++;
 
 
-        if(strcmp(dataline, "\n")){
+        if(strcmp(dataline, "\n"))
+		//checks if line is empty or not
+	{
             char first_word[50];
             while(dataline[i] == ' ') i++;
 			for(;dataline[i] != ' ' && dataline[i] != '\n' && dataline[i] != '\0'; i++) first_word[j++] = dataline[i];
@@ -270,12 +275,14 @@ void initial(){
                     for(;dataline[i] != '\n'; i++) second[j++] = dataline[i];
                     second[j] = '\0';
                     create(&headVar, second, 0);
+			//adds initialised variables to the linked list
                     continue;
                 }
             }
             flag = 1;
             char * ch;
             ch = strchr(dataline,':');
+		//jumps to the position where ":" exists if it doesnt exist, will return NULL
 
             if(ch == NULL){
                 if(!strcmp(first_word, "var")){
@@ -302,7 +309,7 @@ void initial(){
     fclose(filer);
 }
 
-
+//checks if there is any type of typing error in register declaration
 int typo_reg(char reg[]){   // for checking typo error in registers.
     if (reg[0]!='R' || reg[1]=='7' || reg[1]=='8'|| reg[1]=='9' ){
         return 1;
@@ -320,7 +327,7 @@ int main(){
     initial(); //Checks and stores all the labels and variables.
     int hlt_error=0; int hlt_error2=0; int hlthlt=0;
 
-    printLinked(headVar);
+    //printLinked(headVar);
 
 
     
@@ -330,7 +337,10 @@ int main(){
 
 
         static int lineCount;
+
         while(1){
+	    //code runs untill the break statement.       
+
 
             char dataline[100];
             fgets(dataline, 100, filer);
@@ -364,6 +374,7 @@ int main(){
                     char reg1[2], reg2[2], reg3[2];
                     int bin1[3], bin2[3], bin3[3];
                     int opcodeBin[5];
+			//opcodebin stores the bits needed to represent opcode
 
                     if (!strcmp(opcode, "add")) toBin(opcodeBin, 0, 5);
                     else if (!strcmp(opcode, "sub")) toBin(opcodeBin, 1, 5);
@@ -389,8 +400,8 @@ int main(){
                     }
 
                     if(dataline[i] != '\n'){
-                      
-                      raiseError("Unnecessary elements in the instruction!", lineCount);
+			                 //if last element in the string is not "\n" then there may be possible extra unnecessary elements in the string
+                        raiseError("Unnecessary elements in the instruction!", lineCount);
                     }
 
                     regBin(bin1, reg1);
@@ -409,7 +420,7 @@ int main(){
 
                 else if ((!strcmp(opcode, "mov") && ch != NULL) || !strcmp(opcode,"rs")|| !strcmp(opcode,"ls") ){
 
-
+			//atoi takes $number and extracts out the number from it
                     int value = atoi(ch + 1);
                     if(value >=0 && value < 128){
                         int bin2[7];
@@ -454,6 +465,7 @@ int main(){
 
                         
                         raiseError("Illegal immediate value!", lineCount);
+			    //if immediate value is not withtin the given range this error will be raised
 
                     }
 
@@ -477,7 +489,9 @@ int main(){
                     for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
 
                     while(dataline[i] == ' ') i++;
+			//isflag determines if it has been setup or not
                     int isFlag = 0;
+			//if FLAGS is initialised register code will be 111.
                     if(strstr(dataline+i, "FLAGS")) {
 
                             bin2[0] = 1;
@@ -489,8 +503,11 @@ int main(){
                     }
                     if(!isFlag) for(int x = 0; x < 2; x++,i++) reg2[x] = dataline[i];
 
-                    if(isFlag && strcmp(opcode, "mov")) {
-                        
+
+        if(isFlag && strcmp(opcode, "mov")) 
+		    //checks if there are any other operations used except for "mov" or if flag has been initialised or not
+		    {
+                        fclose(filew);
                         raiseError("Invalid use of FLAGS register.", lineCount);
                     }
 
@@ -505,7 +522,7 @@ int main(){
                             raiseError("Unnecessary elements in the instruction!", lineCount);
                     }
 
-
+		//jumps to next if there are no prior errors related to flags
                     next:
                     regBin(bin1, reg1);
                     if(!isFlag) regBin(bin2, reg2);
@@ -568,7 +585,7 @@ int main(){
 
                     }
                     label[x]='\0';
-
+			//line_num to check the line of label and valvar to check for variable line
                     int line_num = checkMember(&headLabel, label);
                     int valVar = checkMember(&headVar, label);
                     // printf("%d %d", line_num, valVar);
