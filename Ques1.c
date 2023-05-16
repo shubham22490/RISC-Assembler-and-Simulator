@@ -2,8 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define INITIAL_CAPACITY 10
+#define BUFFER_SIZE 256
 
+static char error_list[131][100];
 
+static int Ans[130][16];
+//defining a new data type node
 typedef struct node
 {
     char var[100];
@@ -11,9 +16,13 @@ typedef struct node
     struct node* next;
 }node;
 
+//defining heads of two linked lists one to store variables second to store labels
 node* headVar = NULL;
+node* headAssembly = NULL;
+node* headBin = NULL;
 node* headLabel = NULL;
 
+//function to create a linked list as well as add new members to the existing ones
 void create(node ** head, char varname[], int num)
 {
     node* temp;
@@ -21,6 +30,7 @@ void create(node ** head, char varname[], int num)
 
     strcpy(temp->var, varname);
     temp->num = num;
+    temp->next=NULL;
     // printf("%s\n", temp->var);
 
     if (*head == NULL){
@@ -36,42 +46,53 @@ void create(node ** head, char varname[], int num)
         ptr->next = temp;
     }
 }
-
+//funxtion to assign memory locations to variables
 void initvars(node* head, int num){
-    node *temp = head;
-    while(temp){
-        temp->num = num++;
-        temp = temp->next;
+    if(head != NULL){
+        node *temp = head;
+        while(temp){
+            temp->num = num++;
+            temp = temp->next;
+        }
     }
 }
+//checks if the variables are previously defined or not or if the labels are initialised or not
+int checkMember(node** head, char variable[]){
 
-int checkMember(node* head, char var[]){
-    node* ptr = head;
     int flag = 0;
-    while(ptr){
-        if(!strcmp(ptr->var, var)){
-            flag = 1;
-            break;
+    int ans = -1;
+    node* ptr;
+    ptr = (node *)malloc(sizeof(node));
+    if(*head != NULL){
+        node* ptr = *head;
+        while(ptr){
+            if(!strcmp(ptr->var, variable)){
+                ans = ptr->num;
+                flag = 1;
+                break;
+            }
+            ptr = ptr->next;
         }
-        ptr = ptr->next;
     }
-    if(flag) return ptr->num;
+    if(flag) return ans;
     return -1;
 }
-
+//for debugging purpose(check all members of linked list)
 void printLinked(node* head){
-    node *temp = head;
+    if(head != NULL){
+        node *temp = head;
 
-    while(temp){
-        printf("%s %d\n", temp->var, temp->num);
-        temp = temp->next;
+        while(temp){
+            printf("%s %d\n", temp->var, temp->num);
+            temp = temp->next;
+        }
+        printf("\n");
     }
-    printf("\n");
 }
 
-
+//final answer storing list
 static int ans[16]; // Storing ans of each data line
-
+//to check whether error exists or not (=1 means error exists)
 static int errorFlag;
 
 
@@ -148,6 +169,8 @@ void typeC(int opcode[], int reg1[], int reg2[]){
 
 }
 
+
+//function to handle typeD commands
 void typeD(int opcode[], int reg[], int binary[]){
     for(int i = 0; i < 5; i++) ans[i] = opcode[i];
     ans[5] = 0;
@@ -155,9 +178,10 @@ void typeD(int opcode[], int reg[], int binary[]){
     for(int i = 0; i < 7; i++) ans[i+9] = binary[i];
 }
 
+
 //function to handle typeF commands
 void typeF(int opcode[]){
-	
+
 	for (int i = 0; i < 5; i++){
         ans[i] = opcode[i];
     }
@@ -182,7 +206,7 @@ void typeE(int opcode[],int binaryvalue[])
         ans[i+9]=binaryvalue[i];
     }
 
-    
+
 }
 
 
@@ -208,123 +232,193 @@ int toBin(int var[], int n, int bits){
 //Function to convert register to binary
 void regBin(int bin[], char reg[]){
 
+
 	int num = reg[1] - '0';
 	toBin(bin, num, 3);
 }
-
+//if error exists this will close file reading and write the error in a new file
 void raiseError(char error[], int lineNum){
-    FILE *filew;
-    filew = fopen("Ans.txt", "w");
-    fprintf(filew, "Error in line %d: %s", lineNum, error);
-    fclose(filew);
+
+
+    if(lineNum) strcpy(error_list[lineNum], error);
+    else strcpy(error_list[130], error);
+
     errorFlag = 1;
 }
 
-void initial(){
+void ReadFile(){
+    int count = 0;
+    char** lines = malloc(INITIAL_CAPACITY * sizeof(char*));
+    if (lines == NULL) {
+        fprintf(stderr, "Memory allocation error.\n");
+        return;
+    }
 
-    FILE *filer;
-    filer = fopen("Assembly.txt", "r");
-    int count = 0, lineCount = 0;
+    size_t capacity = INITIAL_CAPACITY;
+    size_t size = 0;
 
-    int i, j;
-    int flag = 0;
+    char buffer[BUFFER_SIZE];
+    while (fgets(buffer, BUFFER_SIZE, stdin)) {
+        size_t lineLength = strlen(buffer);
 
-    while(1){
-        i = 0, j = 0;
-        char dataline[100];
-        fgets(dataline, 100, filer);
-        if(feof(filer)) break;
-        lineCount++;
+        // Allocate memory for the line
+        lines[size] = malloc((lineLength + 1) * sizeof(char));
+        if (lines[size] == NULL) {
+            fprintf(stderr, "Memory allocation error.\n");
+            return;
+        }
 
+        // Copy the line to the array
+        strcpy(lines[size], buffer);
 
-        if(strcmp(dataline, "\n")){
-            char first_word[50];
-            while(dataline[i] == ' ') i++;
-			for(;dataline[i] != ' '; i++) first_word[j++] = dataline[i];
-            first_word[j] = '\0';
+        size++;
 
-            if(!strcmp(first_word, "var") && !flag){
-                char second[50];
-                j = 0;
-                while(dataline[i] == ' ') i++;
-                for(;dataline[i] != '\n'; i++) second[j++] = dataline[i];
-                second[j] = '\0';
-                create(&headVar, second, 0);
-                continue;
+        // Resize the array if needed
+        if (size >= capacity) {
+            capacity *= 2;
+            char** newLines = realloc(lines, capacity * sizeof(char*));
+            if (newLines == NULL) {
+                fprintf(stderr, "Memory reallocation error.\n");
+                return;
             }
-            flag = 1;
-            char * ch;
-            ch = strchr(dataline,':');
-
-            if(ch == NULL){
-                if(!strcmp(first_word, "var")){
-                    raiseError("Variables not declared at the beginning.", lineCount);
-                    break;
-                }
-            }
-
-            else{
-                j = 0, i=0;
-                while(dataline[i] == ' ') i++;
-                for(; dataline[i] != ':'; i++) first_word[j++] = dataline[i];
-                first_word[j] = '\0';
-                create(&headLabel, first_word, count);
-            }
-
-            count ++;
-
+            lines = newLines;
         }
     }
 
-    initvars(headVar, count);
-    fclose(filer);
+    for (size_t i = 0; i < size; i++) {
+        // Process each line here
+        if(strcmp(lines[i], "\n")) create(&headAssembly, lines[i], count++);
+        free(lines[i]);
+    }
+
 }
+
+//stores all the initialised variables and intialised labels
+void initial(){
+	//count only counts those lines which have instruction codes
+	//count counts all instruction lines as well as blanks
+
+    int i, j;
+    int flag = 0;
+    node* ptr = headAssembly;
+    int count;
+    int lineWithoutVar = 0;
+
+    while(ptr){
+        i = 0, j = 0;
+        count = ptr -> num;
+        char dataline[100];
+        strcpy(dataline, ptr->var);
+        ptr = ptr->next;
+
+
+        char first_word[50];
+        while(dataline[i] == ' ') i++;
+        for(;dataline[i] != ' ' && dataline[i] != '\n' && dataline[i] != '\0'; i++) first_word[j++] = dataline[i];
+        first_word[j] = '\0';
+
+
+        if (strlen(first_word) == 3){
+            if(!strcmp(first_word, "var") && !flag){
+                char second[50];
+                j = 0;
+                while(dataline[i] == ' ' || dataline[i] == '\t') i++;
+                for(;dataline[i] != '\n'; i++) second[j++] = dataline[i];
+                second[j] = '\0';
+                create(&headVar, second, 0);
+        //adds initialised variables to the linked list
+                continue;
+            }
+        }
+        flag = 1;
+        char * ch;
+        ch = strchr(dataline,':');
+    //jumps to the position where ":" exists if it doesnt exist, will return NULL
+
+        if(ch == NULL){
+            if(!strcmp(first_word, "var")){
+                raiseError("Variables not declared at the beginning.", count);
+
+            }
+        }
+
+        else{
+            j = 0, i=0;
+            while(dataline[i] == ' ') i++;
+            for(; dataline[i] != ':'; i++) first_word[j++] = dataline[i];
+            first_word[j] = '\0';
+            create(&headLabel, first_word, lineWithoutVar);
+        }
+        lineWithoutVar++;
+
+    }
+        count = lineWithoutVar++;
+        initvars(headVar, count);
+}
+
+//checks if there is any type of typing error in register declaration
+int typo_reg(char reg[]){   // for checking typo error in registers.
+    if (reg[0]!='R' || reg[1]=='7' || reg[1]=='8'|| reg[1]=='9' ){
+        return 1;
+    }
+
+    else{
+        return 0;
+    }
+}
+
 
 int main(){
 	 // To store the data of each dataline.
-    printf("Starting the Program: \n");
+
+    ReadFile();
 
     initial(); //Checks and stores all the labels and variables.
 
+    int hlt_error=0; int hlt_error2=0; int hlthlt=0;
+    int count = 0;
 
-    if(!errorFlag){
-        FILE *filer, *filew;
-        filer = fopen("Assembly.txt", "r");
-        filew = fopen("Ans.txt", "w");
+    char dataline[100];
+
+    node* ptr = headAssembly;
 
 
-        static int lineCount;
-        while(!errorFlag){
+    while(ptr){
+    //code runs untill the break statement.
 
-            char dataline[100];
-            fgets(dataline, 100, filer);
-            if(feof(filer)) break;
-            lineCount++;
+            strcpy(dataline, ptr->var);
+            if(ptr) count = ptr->num;
 
-            int i = 0, j = 0, k = 0;
+            ptr = ptr->next;
 
-            if (strcmp(dataline, "\n")){
+
+        int i = 0, j = 0, k = 0;
+
+
 
                 char * ch;
-                ch=strchr(dataline,':');
+                ch = strchr(dataline,':');
 
-                if(ch) i = ch-dataline+1;
+                if(ch) {
+                    i = ch-dataline+1;
+                }
 
 
                 char opcode[4];
 
-                while(dataline[i] == ' ') i++;
-                for(;dataline[i] != ' '; i++) opcode[j++] = dataline[i];
-
+                while(dataline[i] == ' ' || dataline[i] == '\t') i++;
+                for(;dataline[i] != ' ' && j != 3; i++) opcode[j++] = dataline[i];
                 ch=strchr(dataline,'$');
 
                 opcode[j] = '\0';
+                if(!strcmp(opcode, "var")) continue;
 
                 //To handle the bin code of TypeA Commands
                 if (!strcmp(opcode, "add") || !strcmp(opcode, "sub") || !strcmp(opcode, "mul") || !strcmp(opcode, "xor") || !strcmp(opcode, "or") || !strcmp(opcode, "and")){
                     char reg1[2], reg2[2], reg3[2];
                     int bin1[3], bin2[3], bin3[3];
                     int opcodeBin[5];
+			//opcodebin stores the bits needed to represent opcode
 
                     if (!strcmp(opcode, "add")) toBin(opcodeBin, 0, 5);
                     else if (!strcmp(opcode, "sub")) toBin(opcodeBin, 1, 5);
@@ -344,25 +438,36 @@ int main(){
                     while(dataline[i] == ' ') i++;
                     for(int x = 0; x < 2; x++,i++) reg3[x] = dataline[i];
 
+                    if (typo_reg(reg1)==1 || typo_reg(reg2)==1 || typo_reg(reg3)==1 ){
+
+                            raiseError("Either typo in register(s) or register(s) not defined!", count);
+                    }
+
+                    else if(dataline[i] != '\n'){
+			                 //if last element in the string is not "\n" then there may be possible extra unnecessary elements in the string
+                        raiseError("Unnecessary elements in the instruction!", count);
+                    }
+
                     regBin(bin1, reg1);
                     regBin(bin2, reg2);
                     regBin(bin3, reg3);
 
                     typeA(opcodeBin, bin1, bin2, bin3);
 
+
                     for(int x = 0; x < 16; x++){
-                        fprintf(filew,"%d", ans[x]);
+                        Ans[count][x]=ans[x];
                     }
 
-                    fprintf(filew,"\n");
+
 
                 }
 
                 else if ((!strcmp(opcode, "mov") && ch != NULL) || !strcmp(opcode,"rs")|| !strcmp(opcode,"ls") ){
 
-
+			//atoi takes $number and extracts out the number from it
                     int value = atoi(ch + 1);
-                    if(value>0 && value < 128){
+                    if(value >=0 && value < 128){
                         int bin2[7];
                         toBin(bin2,value,7);
                         char reg1[2];
@@ -376,16 +481,37 @@ int main(){
                         while(dataline[i] == ' ') i++;
                         for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
 
+                        i = ch-dataline+1;
+                        for(; dataline[i] != ' ' && dataline[i]!='\n' && dataline[i] != '\0'; i++) continue;
+
+                        if (typo_reg(reg1)==1){
+
+                            raiseError("Either typo in register(s) or register(s) not defined!", count);
+                        }
+
+                        else if(dataline[i] != '\n'){
+
+                            raiseError("Unnecessary elements in the instruction!", count);
+                        }
+
                         regBin(bin1, reg1);
 
                         typeb(opcodeBin, bin1, bin2);
 
 
                         for(int x = 0; x < 16; x++){
-                            fprintf(filew,"%d", ans[x]);
+                            Ans[count][x]=ans[x];
                         }
 
-                        fprintf(filew,"\n");
+
+                    }
+
+                    else{
+
+
+                        raiseError("Illegal immediate value!", count);
+			    //if immediate value is not withtin the given range this error will be raised
+
                     }
 
                 }
@@ -407,28 +533,57 @@ int main(){
                     while(dataline[i] == ' ') i++;
                     for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
 
-
                     while(dataline[i] == ' ') i++;
-                    for(int x = 0; x < 2; x++,i++) reg2[x] = dataline[i];
+			//isflag determines if it has been setup or not
+                    int isFlag = 0;
+			//if FLAGS is initialised register code will be 111.
+                    if(strstr(dataline+i, "FLAGS")) {
+
+                            bin2[0] = 1;
+                            bin2[1] = 1;
+                            bin2[2] = 1;
+                            isFlag = 1;
+                            i = i+5;
+
+                    }
+                    if(!isFlag) for(int x = 0; x < 2; x++,i++) reg2[x] = dataline[i];
 
 
+                    if(isFlag && strcmp(opcode, "mov"))
+		    //checks if there are any other operations used except for "mov" or if flag has been initialised or not
+		    {
+                        raiseError("Invalid use of FLAGS register.", count);
+                    }
 
+                    if (typo_reg(reg1)==1 || (typo_reg(reg2)==1)){
+                        if(isFlag) goto next;
+
+                        raiseError("Either typo in register(s) or register(s) not defined!", count);
+                    }
+
+                    else if(dataline[i] != '\n'){
+
+                            raiseError("Unnecessary elements in the instruction!", count);
+                    }
+
+		//jumps to next if there are no prior errors related to flags
+                    next:
                     regBin(bin1, reg1);
-                    regBin(bin2, reg2);
+                    if(!isFlag) regBin(bin2, reg2);
 
                     typeC(opcodeBin, bin1, bin2);
 
 
                     for(int x = 0; x < 16; x++){
-                        fprintf(filew,"%d", ans[x]);
+                        Ans[count][x]=ans[x];
                     }
 
-                    fprintf(filew,"\n");
+
 
                 }
 
-                else if (!strcmp(opcode, "hlt\n")) {
-
+                else if (!strcmp(opcode, "hlt")) {
+                    hlt_error2=1;
                     int opcodeBin[5];
 
                     toBin(opcodeBin, 26, 5);
@@ -436,13 +591,21 @@ int main(){
                     typeF(opcodeBin);
 
                     for(int x = 0; x < 16; x++){
-                        fprintf(filew, "%d", ans[x]);
+                        Ans[count][x]=ans[x];
+                    }
+
+                    if(ptr){
+                        hlt_error = 1;
+                        hlthlt = count;
+                        errorFlag = 1;
                     }
 
 
-                    fprintf(filew,"\n");
+
 
                 }
+
+
                 else if (!strcmp(opcode, "jmp") || !strcmp(opcode, "jlt") || !strcmp(opcode, "jgt") || !strcmp(opcode ,"je"))
                 {
                     int opcodeBin[5];
@@ -462,22 +625,31 @@ int main(){
 
                     }
                     label[x]='\0';
+			//line_num to check the line of label and valvar to check for variable line
+                    int line_num = checkMember(&headLabel, label);
+                    int valVar = checkMember(&headVar, label);
+                    // printf("%d %d", line_num, valVar);
+                    if(line_num == -1 && valVar == -1){
 
-                    int line_num = checkMember(headLabel, label);
-                    if(line_num == -1){
-                        fclose(filew);
-                        raiseError("Using undefined labels!", lineCount);
+                        raiseError("Using undefined labels!", count);
                     }
+
+                    else if (line_num == -1 && valVar != -1){
+
+                        raiseError("Usage of Varible as Label!", count);
+                    }
+
 
                     int mem1[7];
                     toBin(mem1,line_num,7);
                     typeE(opcodeBin,mem1);
+
                     for(int x = 0; x < 16; x++){
-                        fprintf(filew, "%d", ans[x]);
+                        Ans[count][x]=ans[x];
                     }
 
 
-                    fprintf(filew,"\n");
+
 
                 }
 
@@ -501,28 +673,89 @@ int main(){
                     for(int y=i;(dataline[y]!='\n');y++) variable[x++]=dataline[y];
                     variable[x]='\0';
 
-                    int valVar = checkMember(headVar, variable);
-                    if (valVar == -1){
-                        fclose(filew);
-                        raiseError("Usage of Invalid Variable!", lineCount);
+                    int valVar = checkMember(&headVar, variable);
+                    int valLabel = checkMember(&headLabel, variable);
+                    if (valVar == -1 && valLabel == -1){
+
+                        raiseError("Usage of Invalid Variable!", count);
                     }
+
+                    else if (valVar == -1 && valLabel != -1){
+
+                        raiseError("Usage of Label as Variable!", count);
+                    }
+
+                    else if (typo_reg(reg1)==1){
+
+                            raiseError("Either typo in register(s) or register(s) not defined!", count);
+                        }
+
+
+
                     int mem[7];
                     toBin(mem, valVar, 7);
 
                     typeD(opcodeBin,bin1, mem);
+
                     for(int x = 0; x < 16; x++){
-                        fprintf(filew, "%d", ans[x]);
+                        Ans[count][x]=ans[x];
                     }
 
 
-                    fprintf(filew,"\n");
+
 
 
                 }
+
+                else{
+
+                   raiseError("Typo in instruction!", count);
+                }
+
+        }
+
+
+        if(hlt_error2==0){
+
+            raiseError("Halt instruction is missing!", 0);
+        }
+
+        else if (hlt_error){
+
+            raiseError("Halt instruction is not last!", hlthlt);
+        }
+
+    char arr[16];
+    if(errorFlag==1){
+
+        for(int i=0; i<=130; i++){
+            if(strcmp(error_list[i], "")){
+
+                if(i==130) printf("Error: %s\n", error_list[i]);
+                else printf("Error in line %d: %s\n", i+1, error_list[i]);
+
             }
         }
     }
 
-	
+    else{
+        for(int i = 0; i <130; i++){
+
+            for(int j = 0; j < 16; j++){
+                if(Ans[i][j] == 1) arr[j] = '1';
+                else arr[j] = '0';
+            }
+
+            if(strcmp(arr, "0000000000000000")){
+                if(hlthlt>1)
+                printf("%s", arr);
+                else printf("%s\n", arr);
+                hlthlt--;
+
+            }
+        }
+    }
+
     return 0;
+
 }
