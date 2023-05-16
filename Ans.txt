@@ -1,1 +1,1 @@
-Error in line 4: Halt instruction is not last!
+Error: Usage of Invalid Variable!
