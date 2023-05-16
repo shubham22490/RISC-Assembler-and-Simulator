@@ -1,7 +1,8 @@
-mov R1 $12
-rs R1 $12
-ls R1 $13
-add R1 R2
-mov R2 $100
-mul R3 R1 R2
+var X
+mov R1 R2
+add R4 R5 R6
 hlt
+
+
+mov R2 $10
+
