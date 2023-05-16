@@ -8,22 +8,19 @@
 static char error_list[131][100];
 
 static int Ans[130][16];
-
-/defining a new data type node
+//defining a new data type node
 typedef struct node
 {
-    char var[50];
+    char var[100];
     int num;
     struct node* next;
 }node;
-
 
 //defining heads of two linked lists one to store variables second to store labels
 node* headVar = NULL;
 node* headAssembly = NULL;
 node* headBin = NULL;
 node* headLabel = NULL;
-
 
 //function to create a linked list as well as add new members to the existing ones
 void create(node ** head, char varname[], int num)
@@ -49,7 +46,6 @@ void create(node ** head, char varname[], int num)
         ptr->next = temp;
     }
 }
-
 //funxtion to assign memory locations to variables
 void initvars(node* head, int num){
     if(head != NULL){
@@ -60,11 +56,10 @@ void initvars(node* head, int num){
         }
     }
 }
-
 //checks if the variables are previously defined or not or if the labels are initialised or not
 int checkMember(node** head, char variable[]){
 
-  int flag = 0;
+    int flag = 0;
     int ans = -1;
     node* ptr;
     ptr = (node *)malloc(sizeof(node));
@@ -88,12 +83,10 @@ void printLinked(node* head){
         node *temp = head;
 
         while(temp){
-
-          printf("%s %d\n", temp->var, temp->num);
-           temp = temp->next;
+            printf("%s %d\n", temp->var, temp->num);
+            temp = temp->next;
         }
         printf("\n");
-
     }
 }
 
@@ -243,7 +236,6 @@ void regBin(int bin[], char reg[]){
 	int num = reg[1] - '0';
 	toBin(bin, num, 3);
 }
-
 //if error exists this will close file reading and write the error in a new file
 void raiseError(char error[], int lineNum){
 
@@ -316,8 +308,7 @@ void initial(){
         i = 0, j = 0;
         count = ptr -> num;
         char dataline[100];
-
-      strcpy(dataline, ptr->var);
+        strcpy(dataline, ptr->var);
         ptr = ptr->next;
 
 
@@ -365,7 +356,6 @@ void initial(){
         initvars(headVar, count);
 }
 
-
 //checks if there is any type of typing error in register declaration
 int typo_reg(char reg[]){   // for checking typo error in registers.
     if (reg[0]!='R' || reg[1]=='7' || reg[1]=='8'|| reg[1]=='9' ){
@@ -384,9 +374,6 @@ int main(){
     ReadFile();
 
     initial(); //Checks and stores all the labels and variables.
-    int hlt_error=0; int hlt_error2=0; int hlthlt=0;
-
-    //printLinked(headVar);
 
     int hlt_error=0; int hlt_error2=0; int hlthlt=0;
     int count = 0;
@@ -398,7 +385,6 @@ int main(){
 
     while(ptr){
     //code runs untill the break statement.
-
 
             strcpy(dataline, ptr->var);
             if(ptr) count = ptr->num;
@@ -427,7 +413,6 @@ int main(){
                 opcode[j] = '\0';
                 if(!strcmp(opcode, "var")) continue;
 
-
                 //To handle the bin code of TypeA Commands
                 if (!strcmp(opcode, "add") || !strcmp(opcode, "sub") || !strcmp(opcode, "mul") || !strcmp(opcode, "xor") || !strcmp(opcode, "or") || !strcmp(opcode, "and")){
                     char reg1[2], reg2[2], reg3[2];
@@ -454,7 +439,6 @@ int main(){
                     for(int x = 0; x < 2; x++,i++) reg3[x] = dataline[i];
 
                     if (typo_reg(reg1)==1 || typo_reg(reg2)==1 || typo_reg(reg3)==1 ){
-
 
                             raiseError("Either typo in register(s) or register(s) not defined!", count);
                     }
@@ -502,14 +486,12 @@ int main(){
 
                         if (typo_reg(reg1)==1){
 
-
                             raiseError("Either typo in register(s) or register(s) not defined!", count);
                         }
 
                         else if(dataline[i] != '\n'){
 
                             raiseError("Unnecessary elements in the instruction!", count);
-
                         }
 
                         regBin(bin1, reg1);
@@ -528,14 +510,6 @@ int main(){
 
 
                         raiseError("Illegal immediate value!", count);
-			    //if immediate value is not withtin the given range this error will be raised
-
-                    }
-
-                    else{
-
-                        
-                        raiseError("Illegal immediate value!", lineCount);
 			    //if immediate value is not withtin the given range this error will be raised
 
                     }
@@ -565,7 +539,6 @@ int main(){
 			//if FLAGS is initialised register code will be 111.
                     if(strstr(dataline+i, "FLAGS")) {
 
-
                             bin2[0] = 1;
                             bin2[1] = 1;
                             bin2[2] = 1;
@@ -585,15 +558,12 @@ int main(){
                     if (typo_reg(reg1)==1 || (typo_reg(reg2)==1)){
                         if(isFlag) goto next;
 
-
                         raiseError("Either typo in register(s) or register(s) not defined!", count);
                     }
 
                     else if(dataline[i] != '\n'){
 
-
                             raiseError("Unnecessary elements in the instruction!", count);
-
                     }
 
 		//jumps to next if there are no prior errors related to flags
@@ -607,7 +577,6 @@ int main(){
                     for(int x = 0; x < 16; x++){
                         Ans[count][x]=ans[x];
                     }
-
 
 
 
@@ -633,20 +602,6 @@ int main(){
 
 
 
-
-
-                    while(1){
-                        
-                        fgets(dataline, 100, filer);
-			lineCount++;
-                        if(feof(filer)) break;
-                        if(!strcmp(dataline, "\n")) continue;
-			hltFlag = 1;
-                        hlt_error = 1;
-                        hlthlt=lineCount;
-                        errorFlag = 1;
-                        break;
-                    }
 
                 }
 
@@ -683,7 +638,6 @@ int main(){
 
                         raiseError("Usage of Varible as Label!", count);
                     }
-
 
 
                     int mem1[7];
@@ -735,7 +689,6 @@ int main(){
 
                             raiseError("Either typo in register(s) or register(s) not defined!", count);
                         }
-
 
 
 
@@ -799,36 +752,10 @@ int main(){
                 else printf("%s\n", arr);
                 hlthlt--;
 
-
             }
         }
-
-
-        if(hlt_error2==0){
-            
-            raiseError("Halt instruction is missing!", 0);
-        }
-
-        else if (hlt_error){
-            
-            raiseError("Halt instruction is not last!", hlthlt);
-        }
-    
-
-    fclose(filew);
-    if(errorFlag==1){
-        FILE *filew;
-        filew = fopen("Ans.txt", "w");
-        for(int i=0; i<=130; i++){
-            if(strcmp(error_list[i], "")){
-
-                if(i==130) fprintf(filew, "Error: %s\n", error_list[i]);
-                else fprintf(filew, "Error in line %d: %s\n", i, error_list[i]);
-
-            }
-        }
-        fclose(filew);
     }
 
     return 0;
+
 }
