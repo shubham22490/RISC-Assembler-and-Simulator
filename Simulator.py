@@ -78,7 +78,7 @@ def And(inst):
 
 
 instructions = dict()
-i = 0;
+i = 0
 for line in sys.stdin:
     line = line.strip()
     if(line):
@@ -86,3 +86,17 @@ for line in sys.stdin:
         i += 1
 
 print(instructions)
+
+def toBin(var, n, bits):
+    for i in range(bits):
+        var[i] = 0
+
+    j = bits - 1
+    while n > 0:
+        var[j] = n % 2
+        n //= 2
+        j -= 1
+        if j < 0:
+            return 0
+
+    return 1
