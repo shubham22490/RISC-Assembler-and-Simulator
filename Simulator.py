@@ -6,6 +6,31 @@ RegList = [0]*7
 
 flag = [0]*16
 
+def toDec(var, bits):
+    decimal = 0
+    for i in range(bits):
+        decimal += var[i] * (2 ** (bits - 1 - i))
+    return decimal
+
+def toBin(var, n, bits):
+    for i in range(bits):
+        var[i] = 0
+
+    j = bits - 1
+    while n > 0:
+        var[j] = n % 2
+        n //= 2
+        j -= 1
+        if j < 0:
+            return 0
+
+    return 1
+
+def power(a, b):
+    result = 1
+    for _ in range(b):
+        result *= a
+    return result
 
 def add(inst):
     ir1 = RegInBin.index(inst[7:10])
@@ -75,28 +100,67 @@ def And(inst):
     ir3 = RegInBin.index(inst[13:16])
 
     RegList[ir1] = RegList[ir2] & RegList[ir3]
+def uJmp(inst):
+    mem=RegInBin.index(inst[9:15])
+    line_num=todeci(mem)
+    pc=line_num-1
+    
+    return pc
+def ltJmp(inst):
+    if (flag[-3]==1):
+
+        mem=RegInBin.index(inst[9:15])
+        line_num=todeci(mem)
+        pc=line_num-1
+        return pc
+def gtJmp(inst):
+    if (flag[-2]==1):
+
+        mem=RegInBin.index(inst[9:15])
+        line_num=todeci(mem)
+        pc=line_num-1
+        return pc
+def eJmp(inst):
+    if (flag[-1]==1):
+
+        mem=RegInBin.index(inst[9:15])
+        line_num=todeci(mem)
+        pc=line_num-1
+        return pc
+
+
 
 
 instructions = dict()
-i = 0
+i = 0 
 for line in sys.stdin:
     line = line.strip()
     if(line):
         instructions[i] = line
         i += 1
-
-print(instructions)
-
-def toBin(var, n, bits):
-    for i in range(bits):
-        var[i] = 0
-
-    j = bits - 1
-    while n > 0:
-        var[j] = n % 2
-        n //= 2
-        j -= 1
-        if j < 0:
-            return 0
-
-    return 1
+        
+j=0
+#print(instructions)
+#Main function begins here
+while(j<=i and instructions[j][0:4]!="11010"):
+    if (instructions[j][0:4]=="00000"):
+        add(instructions[j])
+    elif (instructions[j][0:4]=="00001"):
+        sub(instructions[j])
+    elif (instructions[j][0:4]=="00110"):
+        mul(instructions[j])
+    elif (instructions[j][0:4]=="01010"):
+        xor(instructions[j])
+    elif (instructions[j][0:4]=="01011"):
+        Or(instructions[j])
+    elif (instructions[j][0:4]=="01100"):
+        And(instructions[j])
+    elif (instructions[j][0:4]=="01111"):
+        j=uJmp(instructions[j])
+    elif (instructions[j][0:4]=="11100"):
+        j=ltJmp(instructions[j])
+    elif (instructions[j][0:4]=="11101"):
+        j=gtJmp(instructions[j])
+    elif (instructions[j][0:4]=="11111"):
+        j=eJmp(instructions[j])
+    j+=1
