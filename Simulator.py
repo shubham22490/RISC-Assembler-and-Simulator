@@ -6,6 +6,17 @@ RegList = [0]*7
 
 flag = [0]*16
 
+def todeci(num):
+    ans = 0
+    j = len(num)
+
+    for i in range(len(num)):
+        if (num[i] == "1" or num[i] == 1):
+            ans += 2**(j-i-1)
+
+    return ans
+
+print(todeci([0,0,1,0]))
 
 def add(inst):
     ir1 = RegInBin.index(inst[7:10])
@@ -107,8 +118,11 @@ def eJmp(inst):
 
 def mov(ins):
     ir1 = RegInBin.index(ins[10:13])
-    ir2 = RegInBin.index(ins[13:16])
-    RegList[ir1] = RegList[ir2]
+    if ins[13:16]=='111':
+        RegList[ir1]=todeci(flag)
+    else:
+        ir2 = RegInBin.index(ins[13:16])
+        RegList[ir1] = RegList[ir2]
     flag = [0]*16
 
 def cmp(ins):
