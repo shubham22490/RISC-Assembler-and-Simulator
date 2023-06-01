@@ -6,6 +6,17 @@ RegList = [0]*7
 
 flag = [0]*16
 
+def todeci(num):
+    ans = 0
+    j = len(num)
+
+    for i in range(len(num)):
+        if (num[i] == "1" or num[i] == 1):
+            ans += 2**(j-i-1)
+
+    return ans
+
+print(todeci([0,0,1,0]))
 
 def add(inst):
     ir1 = RegInBin.index(inst[7:10])
@@ -75,12 +86,14 @@ def And(inst):
     ir3 = RegInBin.index(inst[13:16])
 
     RegList[ir1] = RegList[ir2] & RegList[ir3]
+
 def uJmp(inst):
     mem=RegInBin.index(inst[9:15])
     line_num=todeci(mem)
     pc=line_num-1
     
     return pc
+
 def ltJmp(inst):
     if (flag[-3]==1):
 
@@ -88,21 +101,61 @@ def ltJmp(inst):
         line_num=todeci(mem)
         pc=line_num-1
         return pc
+    
 def gtJmp(inst):
     if (flag[-2]==1):
-
         mem=RegInBin.index(inst[9:15])
         line_num=todeci(mem)
         pc=line_num-1
         return pc
+    
 def eJmp(inst):
     if (flag[-1]==1):
-
         mem=RegInBin.index(inst[9:15])
         line_num=todeci(mem)
         pc=line_num-1
         return pc
 
+def mov(ins):
+    ir1 = RegInBin.index(ins[10:13])
+    if ins[13:16]=='111':
+        RegList[ir1]=todeci(flag)
+    else:
+        ir2 = RegInBin.index(ins[13:16])
+        RegList[ir1] = RegList[ir2]
+    flag = [0]*16
+
+def cmp(ins):
+    ir1 = RegInBin.index(ins[10:13])
+    ir2 = RegInBin.index(ins[13:16])
+    flag = [0]*16
+    if RegList[ir1]<RegList[ir2]:
+        flag[13]=1
+    elif RegList[ir1]>RegList[ir2]:
+        flag[14]=1
+    else:
+        flag[15]=1
+
+
+def invert(ins):
+    ir1 = RegInBin.index(ins[10:13])
+    ir2 = RegInBin.index(ins[13:16])
+    
+
+
+def div(ins):
+    ir1 = RegInBin.index(ins[10:13])
+    ir2 = RegInBin.index(ins[13:16])
+    if RegList[ir2]!=0:
+        q=RegList[ir1]//RegList[ir2]
+        r=RegList[ir1]%RegList[ir2]
+        RegList[0]=q
+        RegList[1]=r
+    else:
+        flag = [0]*16
+        flag[12]=1
+        RegList[0]=0
+        RegList[1]=0
 
 
 
@@ -117,7 +170,7 @@ for line in sys.stdin:
 j=0
 #print(instructions)
 #Main function begins here
-while(j<=i and instructions[j][0:4]!="11010"):
+while(j<=i and instructions[j][0:5]!="11010"):
     if (instructions[j][0:4]=="00000"):
         add(instructions[j])
     elif (instructions[j][0:4]=="00001"):
@@ -130,6 +183,14 @@ while(j<=i and instructions[j][0:4]!="11010"):
         Or(instructions[j])
     elif (instructions[j][0:4]=="01100"):
         And(instructions[j])
+    elif (instructions[j][0:4]=="00011"):
+        mov(instructions[j])
+    elif (instructions[j][0:4]=="00111"):
+        div(instructions[j])
+    elif (instructions[j][0:4]=="01101"):
+        invert(instructions[j])
+    elif (instructions[j][0:4]=="01110"):
+        cmp(instructions[j])
     elif (instructions[j][0:4]=="01111"):
         j=uJmp(instructions[j])
     elif (instructions[j][0:4]=="11100"):
