@@ -15,8 +15,18 @@ def todeci(num):
             ans += 2**(j-i-1)
 
     return ans
+def toBin(n, bits):
+    var = [0]*bits
 
-print(todeci([0,0,1,0]))
+    j = bits - 1
+    while n > 0:
+        var[j] = n % 2
+        n //= 2
+        j -= 1
+        
+    return var
+
+#print(todeci([0,0,1,0]))
 
 def add(inst):
     ir1 = RegInBin.index(inst[7:10])
@@ -170,35 +180,47 @@ for line in sys.stdin:
 j=0
 #print(instructions)
 #Main function begins here
-while(j<=i and instructions[j][0:5]!="11010"):
-    if (instructions[j][0:4]=="00000"):
+while(j<i and (instructions[j][0:5])!="11010"):
+    opcode=(instructions[j][0:5])
+    
+    if (opcode=="00000"):
         add(instructions[j])
-    elif (instructions[j][0:4]=="00001"):
+    elif (opcode=="00001"):
         sub(instructions[j])
-    elif (instructions[j][0:4]=="00110"):
+    elif (opcode=="00110"):
         mul(instructions[j])
-    elif (instructions[j][0:4]=="01010"):
+    elif (opcode=="01010"):
         xor(instructions[j])
-    elif (instructions[j][0:4]=="01011"):
+    elif (opcode=="01011"):
         Or(instructions[j])
-    elif (instructions[j][0:4]=="01100"):
+    elif (opcode=="01100"):
         And(instructions[j])
-    elif (instructions[j][0:4]=="00011"):
+    elif (opcode=="00011"):
         mov(instructions[j])
-    elif (instructions[j][0:4]=="00111"):
+    elif (opcode=="00111"):
         div(instructions[j])
-    elif (instructions[j][0:4]=="01101"):
+    elif (opcode=="01101"):
         invert(instructions[j])
-    elif (instructions[j][0:4]=="01110"):
+    elif (opcode=="01110"):
         cmp(instructions[j])
-    elif (instructions[j][0:4]=="01111"):
+    elif (opcode=="01111"):
         j=uJmp(instructions[j])
-    elif (instructions[j][0:4]=="11100"):
+    elif (opcode=="11100"):
         j=ltJmp(instructions[j])
-    elif (instructions[j][0:4]=="11101"):
+    elif (opcode=="11101"):
         j=gtJmp(instructions[j])
-    elif (instructions[j][0:4]=="11111"):
+    elif (opcode=="11111"):
         j=eJmp(instructions[j])
     j+=1
+
+
+
+def memorydump(instruct,i):
+    for j in range(i):
+        print(instruct[j])
+        
+    for j in range(128-i):
+        print("0000000000000000")
+memorydump(instructions,i)
     
 
