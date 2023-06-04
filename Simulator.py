@@ -6,31 +6,27 @@ RegList = [0]*7
 
 flag = [0]*16
 
-def toDec(var, bits):
-    decimal = 0
-    for i in range(bits):
-        decimal += var[i] * (2 ** (bits - 1 - i))
-    return decimal
+def todeci(num):
+    ans = 0
+    j = len(num)
 
-def toBin(var, n, bits):
-    for i in range(bits):
-        var[i] = 0
+    for i in range(len(num)):
+        if (num[i] == "1" or num[i] == 1):
+            ans += 2**(j-i-1)
+
+    return ans
+def toBin(n, bits):
+    var = [0]*bits
 
     j = bits - 1
     while n > 0:
         var[j] = n % 2
         n //= 2
         j -= 1
-        if j < 0:
-            return 0
+        
+    return var
 
-    return 1
-
-def power(a, b):
-    result = 1
-    for _ in range(b):
-        result *= a
-    return result
+#print(todeci([0,0,1,0]))
 
 def add(inst):
     ir1 = RegInBin.index(inst[7:10])
@@ -100,12 +96,14 @@ def And(inst):
     ir3 = RegInBin.index(inst[13:16])
 
     RegList[ir1] = RegList[ir2] & RegList[ir3]
+
 def uJmp(inst):
     mem=RegInBin.index(inst[9:15])
     line_num=todeci(mem)
     pc=line_num-1
     
     return pc
+
 def ltJmp(inst):
     if (flag[-3]==1):
 
@@ -113,21 +111,61 @@ def ltJmp(inst):
         line_num=todeci(mem)
         pc=line_num-1
         return pc
+    
 def gtJmp(inst):
     if (flag[-2]==1):
-
         mem=RegInBin.index(inst[9:15])
         line_num=todeci(mem)
         pc=line_num-1
         return pc
+    
 def eJmp(inst):
     if (flag[-1]==1):
-
         mem=RegInBin.index(inst[9:15])
         line_num=todeci(mem)
         pc=line_num-1
         return pc
 
+def mov(ins):
+    ir1 = RegInBin.index(ins[10:13])
+    if ins[13:16]=='111':
+        RegList[ir1]=todeci(flag)
+    else:
+        ir2 = RegInBin.index(ins[13:16])
+        RegList[ir1] = RegList[ir2]
+    flag = [0]*16
+
+def cmp(ins):
+    ir1 = RegInBin.index(ins[10:13])
+    ir2 = RegInBin.index(ins[13:16])
+    flag = [0]*16
+    if RegList[ir1]<RegList[ir2]:
+        flag[13]=1
+    elif RegList[ir1]>RegList[ir2]:
+        flag[14]=1
+    else:
+        flag[15]=1
+
+
+def invert(ins):
+    ir1 = RegInBin.index(ins[10:13])
+    ir2 = RegInBin.index(ins[13:16])
+    
+
+
+def div(ins):
+    ir1 = RegInBin.index(ins[10:13])
+    ir2 = RegInBin.index(ins[13:16])
+    if RegList[ir2]!=0:
+        q=RegList[ir1]//RegList[ir2]
+        r=RegList[ir1]%RegList[ir2]
+        RegList[0]=q
+        RegList[1]=r
+    else:
+        flag = [0]*16
+        flag[12]=1
+        RegList[0]=0
+        RegList[1]=0
 
 
 
@@ -142,25 +180,59 @@ for line in sys.stdin:
 j=0
 #print(instructions)
 #Main function begins here
-while(j<=i and instructions[j][0:4]!="11010"):
-    if (instructions[j][0:4]=="00000"):
+while(j<i and (instructions[j][0:5])!="11010"):
+    opcode=(instructions[j][0:5])
+    
+    if (opcode=="00000"):
         add(instructions[j])
-    elif (instructions[j][0:4]=="00001"):
+    elif (opcode=="00001"):
         sub(instructions[j])
-    elif (instructions[j][0:4]=="00110"):
+    elif (opcode=="00110"):
         mul(instructions[j])
-    elif (instructions[j][0:4]=="01010"):
+    elif (opcode=="01010"):
         xor(instructions[j])
-    elif (instructions[j][0:4]=="01011"):
+    elif (opcode=="01011"):
         Or(instructions[j])
-    elif (instructions[j][0:4]=="01100"):
+    elif (opcode=="01100"):
         And(instructions[j])
-    elif (instructions[j][0:4]=="01111"):
+    elif (opcode=="00011"):
+        mov(instructions[j])
+    elif (opcode=="00111"):
+        div(instructions[j])
+    elif (opcode=="01101"):
+        invert(instructions[j])
+    elif (opcode=="01110"):
+        cmp(instructions[j])
+    elif (opcode=="01111"):
         j=uJmp(instructions[j])
-    elif (instructions[j][0:4]=="11100"):
+    elif (opcode=="11100"):
         j=ltJmp(instructions[j])
-    elif (instructions[j][0:4]=="11101"):
+    elif (opcode=="11101"):
         j=gtJmp(instructions[j])
-    elif (instructions[j][0:4]=="11111"):
+    elif (opcode=="11111"):
         j=eJmp(instructions[j])
     j+=1
+
+def print_me(lst):
+    for i in lst:
+        print(i,end="")
+    print('')
+
+print_me(toBin(pc,7))
+print_me(toBin(RegList[0],16))
+print_me(toBin(RegList[1],16))
+print_me(toBin(RegList[2],16))
+print_me(toBin(RegList[3],16))
+print_me(toBin(RegList[4],16))
+print_me(toBin(RegList[5],16))
+print_me(toBin(RegList[6],16))
+print(flag,end="")
+
+
+def memorydump(instruct,i):
+    for j in range(i):
+        print(instruct[j])
+        
+    for j in range(128-i):
+        print("0000000000000000")
+memorydump(instructions,i)
