@@ -213,6 +213,7 @@ while(j<i and (instructions[j][0:5])!="11010"):
         j=eJmp(instructions[j])
     j+=1
 
+
 def print_me(lst):
     for i in lst:
         print(i,end="")
@@ -229,10 +230,12 @@ print_me(toBin(RegList[6],16))
 print(flag,end="")
 
 
+
 def memorydump(instruct,i):
     for j in range(i):
         print(instruct[j])
         
     for j in range(128-i):
         print("0000000000000000")
+
 memorydump(instructions,i)
