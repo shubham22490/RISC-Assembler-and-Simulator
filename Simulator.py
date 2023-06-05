@@ -126,6 +126,41 @@ def eJmp(inst):
         line_num=todeci(mem)
         pc=line_num-1
         return pc
+    
+
+def movi(ins):
+    ir1 = RegInBin.index(ins[6:9])
+    imm = RegInBin.index(ins[9:16])
+    immediate = todeci(imm)
+    if(immediate >= 0 and immediate < 128):
+        RegList[ir1] = imm
+    else:
+        RegList[ir1] = 0
+        flag = [0]*16
+
+
+def leftshift(ins):
+    ir1 = RegInBin.index(ins[6:9])
+    imm = RegInBin.index(ins[9:16])
+    immediate = todeci(imm)
+    if(immediate >=0 and immediate < 128):
+        val = RegList[ir1] << imm
+        RegList[ir1] = val
+    else:
+        RegList[ir1] = 0
+        flag = [0]*16
+
+def rightshift(ins):
+    ir1 = RegInBin.index(ins[6:9])
+    imm = RegInBin.index(ins[9:16])
+    immediate = todeci(imm)
+    if(immediate >=0 and immediate < 128):
+        val = RegList[ir1] >> imm
+        RegList[ir1] = val
+    else:
+        RegList[ir1] = 0
+        flag = [0]*16
+
 
 def mov(ins):
     ir1 = RegInBin.index(ins[10:13])
