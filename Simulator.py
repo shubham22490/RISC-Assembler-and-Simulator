@@ -214,6 +214,22 @@ while(j<i and (instructions[j][0:5])!="11010"):
     j+=1
 
 
+def print_me(lst):
+    for i in lst:
+        print(i,end="")
+    print('')
+
+print_me(toBin(pc,7))
+print_me(toBin(RegList[0],16))
+print_me(toBin(RegList[1],16))
+print_me(toBin(RegList[2],16))
+print_me(toBin(RegList[3],16))
+print_me(toBin(RegList[4],16))
+print_me(toBin(RegList[5],16))
+print_me(toBin(RegList[6],16))
+print(flag,end="")
+
+
 
 def memorydump(instruct,i):
     for j in range(i):
@@ -221,6 +237,5 @@ def memorydump(instruct,i):
         
     for j in range(128-i):
         print("0000000000000000")
-memorydump(instructions,i)
-    
 
+memorydump(instructions,i)
