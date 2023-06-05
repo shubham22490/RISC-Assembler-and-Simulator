@@ -1,4 +1,5 @@
 import sys
+import math
 
 global pc
 pc = 0
@@ -18,6 +19,8 @@ def todeci(num):
             ans += 2**(j-i-1)
 
     return ans
+
+
 def toBin(n, bits):
     var = [0]*bits
 
@@ -91,8 +94,6 @@ def Or(inst):
     RegList[ir1] = RegList[ir2] | RegList[ir3]
 
 
-
-
 def And(inst):
     ir1 = RegInBin.index(inst[7:10])
     ir2 = RegInBin.index(inst[10:13])
@@ -128,6 +129,41 @@ def eJmp(inst):
         line_num=todeci(mem)
         pc=line_num-1
         return pc
+    
+
+def movi(ins):
+    ir1 = RegInBin.index(ins[6:9])
+    imm = RegInBin.index(ins[9:16])
+    immediate = todeci(imm)
+    if(immediate >= 0 and immediate < 128):
+        RegList[ir1] = imm
+    else:
+        RegList[ir1] = 0
+        flag = [0]*16
+
+
+def leftshift(ins):
+    ir1 = RegInBin.index(ins[6:9])
+    imm = RegInBin.index(ins[9:16])
+    immediate = todeci(imm)
+    if(immediate >=0 and immediate < 128):
+        val = RegList[ir1] << imm
+        RegList[ir1] = val
+    else:
+        RegList[ir1] = 0
+        flag = [0]*16
+
+def rightshift(ins):
+    ir1 = RegInBin.index(ins[6:9])
+    imm = RegInBin.index(ins[9:16])
+    immediate = todeci(imm)
+    if(immediate >=0 and immediate < 128):
+        val = RegList[ir1] >> imm
+        RegList[ir1] = val
+    else:
+        RegList[ir1] = 0
+        flag = [0]*16
+
 
 def movi(ins):
     x = ins[6:9]
@@ -160,6 +196,16 @@ def cmp(ins):
 def invert(ins):
     ir1 = RegInBin.index(ins[10:13])
     ir2 = RegInBin.index(ins[13:16])
+    num=RegList[ir2]
+    n=int(math.log(num,2))+1
+    L=toBin(num, n)
+    for i in range(len(L)):
+        if L[i]==1:
+            L[i]=0
+        else:
+            L[i]=1
+    RegList[ir1]=todeci(L)
+    flag = [0]*16
     
 
 
