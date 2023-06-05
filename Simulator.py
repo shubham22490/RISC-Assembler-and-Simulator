@@ -1,7 +1,10 @@
 import sys
 
+global pc
 pc = 0
-RegInBin = ['000', '001', '010', '011', '100', '101', '110']
+global RegInBin
+RegInBin= ['000', '001', '010', '011', '100', '101', '110']
+global RegList
 RegList = [0]*7
 
 flag = [0]*16
@@ -126,6 +129,13 @@ def eJmp(inst):
         pc=line_num-1
         return pc
 
+def movi(ins):
+    x = ins[6:9]
+    ir1 = RegInBin.index(x)
+    val = todeci(ins[9:])
+    RegList[ir1] = val
+    flag = [0]*16
+
 def mov(ins):
     ir1 = RegInBin.index(ins[10:13])
     if ins[13:16]=='111':
@@ -168,9 +178,36 @@ def div(ins):
         RegList[1]=0
 
 
+def memorydump(instruct,i):
+    for j in range(i):
+        print(instruct[j])
+
+    for j in range(128-i):
+        print("0000000000000000")
+
+
+def print_me(lst):
+    for i in lst:
+        print(i,end="")
+    print(" ", end = "")
+
+def regDump(lineNum):
+    print_me(toBin(lineNum,7))
+    print(" "*7, end = "")
+    print_me(toBin(RegList[0],16))
+    print_me(toBin(RegList[1],16))
+    print_me(toBin(RegList[2],16))
+    print_me(toBin(RegList[3],16))
+    print_me(toBin(RegList[4],16))
+    print_me(toBin(RegList[5],16))
+    print_me(toBin(RegList[6],16))
+    print_me(flag)
+    print()
 
 instructions = dict()
+
 i = 0 
+
 for line in sys.stdin:
     line = line.strip()
     if(line):
@@ -187,6 +224,8 @@ while(j<i and (instructions[j][0:5])!="11010"):
         add(instructions[j])
     elif (opcode=="00001"):
         sub(instructions[j])
+    elif (opcode=="00010"):
+        movi(instructions[j])
     elif (opcode=="00110"):
         mul(instructions[j])
     elif (opcode=="01010"):
@@ -211,31 +250,15 @@ while(j<i and (instructions[j][0:5])!="11010"):
         j=gtJmp(instructions[j])
     elif (opcode=="11111"):
         j=eJmp(instructions[j])
+    regDump(j)
     j+=1
 
 
-def print_me(lst):
-    for i in lst:
-        print(i,end="")
-    print('')
-
-print_me(toBin(pc,7))
-print_me(toBin(RegList[0],16))
-print_me(toBin(RegList[1],16))
-print_me(toBin(RegList[2],16))
-print_me(toBin(RegList[3],16))
-print_me(toBin(RegList[4],16))
-print_me(toBin(RegList[5],16))
-print_me(toBin(RegList[6],16))
-print(flag,end="")
 
 
 
-def memorydump(instruct,i):
-    for j in range(i):
-        print(instruct[j])
-        
-    for j in range(128-i):
-        print("0000000000000000")
+
+
+
 
 memorydump(instructions,i)
