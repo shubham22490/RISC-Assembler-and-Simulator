@@ -4,6 +4,56 @@
 
 #define INITIAL_CAPACITY 10
 #define BUFFER_SIZE 256
+struct stack
+{
+    int size;
+    int top;
+    int *s;
+};
+void create_s(struct stack *st)
+{
+    printf("Enter SIze:");
+    scanf("%d",&st->size);
+    st->top=-1;
+    st->s=(int*)malloc(sizeof(int)*st->size);
+
+
+}
+// void display(struct stack st)
+// {
+//     int i;
+//     for(i=st.top;i>=0;i--)
+//     {
+//         printf("%d ",st.s[i]);
+//     }
+
+// }
+void push_s(struct stack *st,int x)
+{
+    if(st->top==st->size-1)
+    {
+        printf("Stack Overflow");
+    }
+    else
+    {
+        st->top++;
+        st->s[st->top]=x;
+    }
+}
+int pop_s(struct stack *st)
+{
+    if (st->top==-1)
+    {
+        printf("Stack Underflow");
+    }
+    else 
+    {
+        return st->s[st->top--];
+        
+
+    }
+}
+
 
 static char error_list[131][100];
 
@@ -208,6 +258,30 @@ void typeE(int opcode[],int binaryvalue[])
 
 
 }
+
+void typextra(int opcode[],int reg1[],int reg2[])
+{
+    for (int i = 0; i < 5; i++){
+        ans[i] = opcode[i];
+    }
+    for(int i=5; i<=9; i++){
+		ans[i]=0;
+	}
+    int j=10;
+    for(int i=0;i<3;i++)
+    {
+        ans[j+i]=reg1[i];
+    }
+    j+=3;
+    for(int i=0;i<3;i++)
+    {
+        ans[j+i]=reg2[i];
+    }
+
+
+
+}
+
 
 
 //Function to convert number to binary in specific number of bits.
@@ -702,6 +776,62 @@ int main(){
                     }
 
 
+
+
+
+                }
+                else if(!strcmp(opcode, "sqr") || !strcmp(opcode, "cube"))
+                {
+                    int opcodeBin[5];
+                    if(!strcmp(opcode, "sqr")) toBin(opcodeBin, 16, 5);
+                    else if(!strcmp(opcode, "cube")) toBin(opcodeBin, 17, 5);
+                    char reg1[2],reg2[2];
+                    int bin1[3],bin2[3];
+                    while(dataline[i] == ' ') i++;
+                    for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
+                    regBin(bin1, reg1);
+                    while(dataline[i] == ' ') i++;
+                    for(int x = 0; x < 2; x++,i++) reg2[x] = dataline[i];
+                    if (typo_reg(reg1)==1 || typo_reg(reg2)==1){
+
+                            raiseError("Either typo in register(s) or register(s) not defined!", count);
+                    }
+
+                    else if(dataline[i] != '\n'){
+			                 //if last element in the string is not "\n" then there may be possible extra unnecessary elements in the string
+                        raiseError("Unnecessary elements in the instruction!", count);
+                    }
+                    regBin(bin1, reg2);
+                    regBin(bin2,reg2);
+                    typextra(opcodeBin,bin1,bin2);
+                    
+                }
+                else if (!strcmp(opcode, "push") || !strcmp(opcode, "pushi") || !strcmp(opcode, "pull"))
+                {
+                    int opcodeBin[5];
+                    char reg1[2];
+                    int bin1[3];
+                    if(!strcmp(opcode, "push")) 
+                    {
+                        toBin(opcodeBin, 18, 5);
+                        while(dataline[i] == ' ') i++;
+                        for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
+                        regBin(bin1,reg1);
+                        typepush(opcodeBin,bin1);
+
+                    }
+                    else if(!strcmp(opcode, "pushi")) 
+                    {
+                        toBin(opcodeBin, 19, 5);
+                        int value = atoi(ch + 1);
+
+                    }
+                    else if(!strcmp(opcode, "pull")) 
+                    {
+                        toBin(opcodeBin, 20, 5);
+
+                    }
+                    
 
 
 
