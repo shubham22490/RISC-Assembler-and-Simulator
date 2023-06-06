@@ -3,11 +3,14 @@ import math
 
 global pc
 pc = 0
+
 global RegInBin
 RegInBin= ['000', '001', '010', '011', '100', '101', '110']
+
 global RegList
 RegList = [0]*7
 
+global flag
 flag = [0]*16
 
 def todeci(num):
@@ -43,9 +46,9 @@ def add(inst):
 
     if(val >= 0 and val < 65536):
         RegList[ir1] = val
+        flag = [0]*16
     else:
         RegList[ir1] = 0
-        flag = [0]*16
         flag[12] = 1
 
 
@@ -58,6 +61,7 @@ def sub(inst):
 
     if(val >= 0 and val < 65536):
         RegList[ir1] = val
+        flag = [0]*16
     else:
         RegList[ir1] = 0
         flag = [0]*16
@@ -72,6 +76,7 @@ def mul(inst):
 
     if(val >= 0 and val < 65536):
         RegList[ir1] = val
+        flag = [0]*16
     else:
         RegList[ir1] = 0
         flag = [0]*16
@@ -84,6 +89,7 @@ def xor(inst):
     ir3 = RegInBin.index(inst[13:16])
 
     RegList[ir1] = RegList[ir2] ^ RegList[ir3]
+    flag = [0]*16
 
 
 def Or(inst):
@@ -92,12 +98,14 @@ def Or(inst):
     ir3 = RegInBin.index(inst[13:16])
 
     RegList[ir1] = RegList[ir2] | RegList[ir3]
+    flag = [0]*16
 
 
 def And(inst):
     ir1 = RegInBin.index(inst[7:10])
     ir2 = RegInBin.index(inst[10:13])
     ir3 = RegInBin.index(inst[13:16])
+    flag = [0]*16
 
     RegList[ir1] = RegList[ir2] & RegList[ir3]
 
@@ -135,34 +143,26 @@ def movi(ins):
     ir1 = RegInBin.index(ins[6:9])
     imm = RegInBin.index(ins[9:16])
     immediate = todeci(imm)
-    if(immediate >= 0 and immediate < 128):
-        RegList[ir1] = imm
-    else:
-        RegList[ir1] = 0
-        flag = [0]*16
+    RegList[ir1] = imm
+    flag = [0]*16
 
 
 def leftshift(ins):
     ir1 = RegInBin.index(ins[6:9])
     imm = RegInBin.index(ins[9:16])
     immediate = todeci(imm)
-    if(immediate >=0 and immediate < 128):
-        val = RegList[ir1] << imm
-        RegList[ir1] = val
-    else:
-        RegList[ir1] = 0
-        flag = [0]*16
+
+    val = RegList[ir1] << imm
+    RegList[ir1] = val
+    flag = [0]*16
 
 def rightshift(ins):
     ir1 = RegInBin.index(ins[6:9])
     imm = RegInBin.index(ins[9:16])
     immediate = todeci(imm)
-    if(immediate >=0 and immediate < 128):
-        val = RegList[ir1] >> imm
-        RegList[ir1] = val
-    else:
-        RegList[ir1] = 0
-        flag = [0]*16
+    val = RegList[ir1] >> imm
+    RegList[ir1] = val
+    flag = [0]*16
 
 
 def movi(ins):
@@ -173,9 +173,10 @@ def movi(ins):
     flag = [0]*16
 
 def mov(ins):
+    global flag
     ir1 = RegInBin.index(ins[10:13])
     if ins[13:16]=='111':
-        RegList[ir1]=todeci(flag)
+        RegList[ir1] = todeci(flag)
     else:
         ir2 = RegInBin.index(ins[13:16])
         RegList[ir1] = RegList[ir2]
@@ -262,6 +263,7 @@ for line in sys.stdin:
         
 j=0
 #print(instructions)
+
 #Main function begins here
 while(j<i and (instructions[j][0:5])!="11010"):
     opcode=(instructions[j][0:5])
@@ -296,15 +298,8 @@ while(j<i and (instructions[j][0:5])!="11010"):
         j=gtJmp(instructions[j])
     elif (opcode=="11111"):
         j=eJmp(instructions[j])
+
     regDump(j)
     j+=1
-
-
-
-
-
-
-
-
 
 memorydump(instructions,i)
