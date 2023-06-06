@@ -1,10 +1,20 @@
 import sys
+import math
 
+global pc
 pc = 0
-RegInBin = ['000', '001', '010', '011', '100', '101', '110']
+
+global RegInBin
+RegInBin= ['000', '001', '010', '011', '100', '101', '110']
+
+global RegList
 RegList = [0]*7
 
+global flag
 flag = [0]*16
+
+global stack
+stack=[]
 
 def todeci(num):
     ans = 0
@@ -15,6 +25,8 @@ def todeci(num):
             ans += 2**(j-i-1)
 
     return ans
+
+
 def toBin(n, bits):
     var = [0]*bits
 
@@ -37,9 +49,9 @@ def add(inst):
 
     if(val >= 0 and val < 65536):
         RegList[ir1] = val
+        flag = [0]*16
     else:
         RegList[ir1] = 0
-        flag = [0]*16
         flag[12] = 1
 
 
@@ -52,6 +64,7 @@ def sub(inst):
 
     if(val >= 0 and val < 65536):
         RegList[ir1] = val
+        flag = [0]*16
     else:
         RegList[ir1] = 0
         flag = [0]*16
@@ -66,6 +79,7 @@ def mul(inst):
 
     if(val >= 0 and val < 65536):
         RegList[ir1] = val
+        flag = [0]*16
     else:
         RegList[ir1] = 0
         flag = [0]*16
@@ -78,6 +92,7 @@ def xor(inst):
     ir3 = RegInBin.index(inst[13:16])
 
     RegList[ir1] = RegList[ir2] ^ RegList[ir3]
+    flag = [0]*16
 
 
 def Or(inst):
@@ -86,14 +101,14 @@ def Or(inst):
     ir3 = RegInBin.index(inst[13:16])
 
     RegList[ir1] = RegList[ir2] | RegList[ir3]
-
-
+    flag = [0]*16
 
 
 def And(inst):
     ir1 = RegInBin.index(inst[7:10])
     ir2 = RegInBin.index(inst[10:13])
     ir3 = RegInBin.index(inst[13:16])
+    flag = [0]*16
 
     RegList[ir1] = RegList[ir2] & RegList[ir3]
 
@@ -125,11 +140,46 @@ def eJmp(inst):
         line_num=todeci(mem)
         pc=line_num-1
         return pc
+    
+
+def movi(ins):
+    ir1 = RegInBin.index(ins[6:9])
+    imm = RegInBin.index(ins[9:16])
+    immediate = todeci(imm)
+    RegList[ir1] = imm
+    flag = [0]*16
+
+
+def leftshift(ins):
+    ir1 = RegInBin.index(ins[6:9])
+    imm = RegInBin.index(ins[9:16])
+    immediate = todeci(imm)
+
+    val = RegList[ir1] << imm
+    RegList[ir1] = val
+    flag = [0]*16
+
+def rightshift(ins):
+    ir1 = RegInBin.index(ins[6:9])
+    imm = RegInBin.index(ins[9:16])
+    immediate = todeci(imm)
+    val = RegList[ir1] >> imm
+    RegList[ir1] = val
+    flag = [0]*16
+
+
+def movi(ins):
+    x = ins[6:9]
+    ir1 = RegInBin.index(x)
+    val = todeci(ins[9:])
+    RegList[ir1] = val
+    flag = [0]*16
 
 def mov(ins):
+    global flag
     ir1 = RegInBin.index(ins[10:13])
     if ins[13:16]=='111':
-        RegList[ir1]=todeci(flag)
+        RegList[ir1] = todeci(flag)
     else:
         ir2 = RegInBin.index(ins[13:16])
         RegList[ir1] = RegList[ir2]
@@ -150,6 +200,16 @@ def cmp(ins):
 def invert(ins):
     ir1 = RegInBin.index(ins[10:13])
     ir2 = RegInBin.index(ins[13:16])
+    num=RegList[ir2]
+    n=int(math.log(num,2))+1
+    L=toBin(num, n)
+    for i in range(len(L)):
+        if L[i]==1:
+            L[i]=0
+        else:
+            L[i]=1
+    RegList[ir1]=todeci(L)
+    flag = [0]*16
     
 
 
@@ -167,10 +227,79 @@ def div(ins):
         RegList[0]=0
         RegList[1]=0
 
+def sqr(ins):
+    ir1 = RegInBin.index(ins[10:13])
+    ir2 = RegInBin.index(ins[13:16])
+    finalv=RegList[ir2]
+    finalv=finalv**2
+    if (finalv< 128):
+        RegList[ir1]=finalv
+    else:
+        RegList[ir1]=0
+        flag[12]=1   
+    
+    
+def cube(ins):
+    ir1 = RegInBin.index(ins[10:13])
+    ir2 = RegInBin.index(ins[13:16])
+    finalv=RegList[ir2]
+    finalv=finalv**3
+    if (finalv< 128):
+        RegList[ir1]=finalv
+    else:
+        RegList[ir1]=0
+        flag[12]=1  
 
+def push(ins):
+    ir1 = RegInBin.index(ins[13:16])
+    element=RegList[ir1]
+    stack.append(element)
+    flag = [0]*16
+
+def pushi(ins):
+    immediate= RegInBin.index(ins[9:16])
+    stack.append(immediate)
+    flag = [0]*16
+
+def pop(ins):
+    ir1 = RegInBin.index(ins[13:16])
+    if (len(stack)>0):
+        RegList[ir1]=stack.pop()
+    else:
+        RegList[ir1]=0
+        flag[11]=1
+
+
+def memorydump(instruct,i):
+    for j in range(i):
+        print(instruct[j])
+
+    for j in range(128-i):
+        print("0000000000000000")
+
+
+def print_me(lst):
+    for i in lst:
+        print(i,end="")
+    print(" ", end = "")
+
+def regDump(lineNum):
+    print_me(toBin(lineNum,7))
+    print(" "*7, end = "")
+    print_me(toBin(RegList[0],16))
+    print_me(toBin(RegList[1],16))
+    print_me(toBin(RegList[2],16))
+    print_me(toBin(RegList[3],16))
+    print_me(toBin(RegList[4],16))
+    print_me(toBin(RegList[5],16))
+    print_me(toBin(RegList[6],16))
+    print_me(flag)
+    print()
 
 instructions = dict()
+
 i = 0 
+
 for line in sys.stdin:
     line = line.strip()
     if(line):
@@ -179,6 +308,7 @@ for line in sys.stdin:
         
 j=0
 #print(instructions)
+
 #Main function begins here
 while(j<i and (instructions[j][0:5])!="11010"):
     opcode=(instructions[j][0:5])
@@ -187,6 +317,8 @@ while(j<i and (instructions[j][0:5])!="11010"):
         add(instructions[j])
     elif (opcode=="00001"):
         sub(instructions[j])
+    elif (opcode=="00010"):
+        movi(instructions[j])
     elif (opcode=="00110"):
         mul(instructions[j])
     elif (opcode=="01010"):
@@ -211,16 +343,21 @@ while(j<i and (instructions[j][0:5])!="11010"):
         j=gtJmp(instructions[j])
     elif (opcode=="11111"):
         j=eJmp(instructions[j])
+
+    # additional operators
+
+    elif (opcode=="10000"):
+        j=sqr(instructions[j])
+    elif (opcode=="10001"):
+        j=cube(instructions[j])
+    elif (opcode=="10010"):
+        j=push(instructions[j])
+    elif (opcode=="10011"):
+        j=pushi(instructions[j])
+    elif (opcode=="10100"):
+        j=pop(instructions[j])
+
+    regDump(j)
     j+=1
 
-
-
-def memorydump(instruct,i):
-    for j in range(i):
-        print(instruct[j])
-        
-    for j in range(128-i):
-        print("0000000000000000")
 memorydump(instructions,i)
-    
-
