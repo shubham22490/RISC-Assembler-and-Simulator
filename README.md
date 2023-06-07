@@ -19,10 +19,12 @@ assembly code.
 The program supports the following assembly instructions:
 * Type A Instructions: add, sub, mul, xor, or, and 
 * Type B Instructions: mov, rs, ls
-* Type C Instructions: div, not, cmp
+* Type C Instructions: div, not, cmp, sqr, cub
 * Type D Instructions: jmp, jlt, jgt, je, hlt
 * Type E Instructions: jmp, jlt, jgt, je, hltwith binary values
 * Type F Instructions: hlt
+* Type G Instructions: push, pop
+* Type H Instructions: pushi
 
 
 **Usage**
@@ -75,11 +77,32 @@ This program is designed to take input as machine code and then perform the oper
    .  RegList: A list representing the registers, initially filled with zeros.
    .  flag: A list representing the flags, initially filled with zeros.
    .  memory: A dictionary representing the memory storage. 
+   .  stack: A stack storing the values pushed into it.
 2. Converter Functions
  * todeci(num): Converts a binary number represented as a list of bits to decimal.
  * toBin(n, bits): Converts a decimal number to binary represented as a list of bits with the specified number of bits.
 3. We write the simulation program for all the instructions previously mentioned in the assembler
- * Each function takes an instruction (inst) as input and performs the corresponding operation on the registers, flags, or memory.
+ * add(inst): Executes an add instruction by adding the values of two registers and storing the result in another register.
+ * sub(inst): Executes a subtract instruction by subtracting the value of one register from another and storing the result in another register.
+ * mul(inst): Executes a multiply instruction by multiplying the values of two registers and storing the result in another register.
+ * xor(inst): Executes a bitwise XOR instruction by performing a bitwise XOR operation between two registers and storing the result in another register.
+ * Or(inst): Executes a bitwise OR instruction by performing a bitwise OR operation between two registers and storing the result in another register.
+ * And(inst): Executes a bitwise AND instruction by performing a bitwise AND operation between two registers and storing the result in another register.
+ * uJmp(inst): Executes an unconditional jump instruction by setting the program counter to the specified memory address.
+ * movi(ins): Executes a move immediate instruction by storing an immediate value in a register.
+ * leftshift(ins): Executes a left shift instruction by shifting the bits of a register to the left by a specified number of positions.
+ * rightshift(ins): Executes a right shift instruction by shifting the bits of a register to the right by a specified number of positions.
+ * mov(ins): Executes a move instruction by copying the value of one register to another register or the flag register.
+ * cmpr(ins): Executes a compare instruction by comparing the values of two registers and setting the flag register accordingly.
+ * invert(ins): Executes an invert instruction by inverting the bits of a register.
+ * div(ins): Executes a divide instruction by dividing the value of one register by another and storing the quotient and remainder in two specific registers.
+ * load(inst): Executes a load instruction by loading the value from memory into a register.
+ * store(inst): Executes a store instruction by storing the value from a register into memory.
+ * sqr(ins): Executes a square instruction by squaring the value of a register and storing the result in another register.
+ * cube(ins): Executes a cube instruction by cubing the value of a register and storing the result in another register.
+ * push(ins): Executes a push instruction by pushing the value of a register onto the stack.
+ * pushi(ins): Executes a push immediate instruction by pushing an immediate value onto the stack.
+ * pop(ins)
 4. Memory Dump and Register Data Print
  * memorydump(instruct, i): Prints the contents of the memory.
  * print_me(lst): Prints the given list.
