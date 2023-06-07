@@ -147,6 +147,26 @@ void  typeb(int opcode[], int reg1[], int binary[]){
 
 }
 
+//function to handle typeb command with floating point representation
+void  typebf(int opcode[], int reg1[], int binary[]){
+    for(int i = 0; i < 5; i++){
+        ans[i] = opcode[i];
+    }
+
+    int j = 5;
+    for(int i = 0; i < 3; i++){
+        ans[j+i] = reg1[i];
+        }
+
+    j+=3;
+
+    for(int i=0;i<8;i++){
+        ans[i+j]=binary[i];
+    }
+    j+=8;
+
+}
+
 //function to handle typeC commands
 void typeC(int opcode[], int reg1[], int reg2[]){
 	for (int i = 0; i < 5; i++){
@@ -240,7 +260,7 @@ void regBin(int bin[], char reg[]){
 void raiseError(char error[], int lineNum){
 
 
-    if(lineNum) strcpy(error_list[lineNum], error);
+    if(lineNum>=0) strcpy(error_list[lineNum], error);
     else strcpy(error_list[130], error);
 
     errorFlag = 1;
@@ -367,6 +387,100 @@ int typo_reg(char reg[]){   // for checking typo error in registers.
     }
 }
 
+int tobinfloating(float value, int final[], int n){
+    int i = (int)value;
+    float fr = value-i;
+    int arri[5]={0}; int arrf[5]={0};
+
+    
+    toBin(arri, i, 5);
+    int l=0;
+    float h=fr;
+    while(h>0 && l<5){
+        h=h*2;
+        arrf[l]=(int)h;
+        h=h-(int)h;
+        l++;
+    }
+
+    
+    int con[10];
+    int index=0;
+    for(int g=0; g<5; g++, index++) con[index]=arri[g];
+        
+    con[index++]=-1;
+    
+    for(int g=0; g<l; g++, index++) con[index]=arrf[g];
+    
+    int flag=0; int count=0;
+    int v=0;
+    for(int x=0; x<index; x++){
+        if (con[x]==-1) flag=1;
+        if (con[x]==1 && flag==0){
+            for(int j=x+1; j<index; j++){
+                
+                if (con[j]==-1) {
+                    v=1;
+                    break; 
+                }
+                count++;
+            }
+        }
+        
+        else if (flag==1){
+            for(int f=x+1; f<index; f++){
+                count--;
+                if (con[f]==1) {
+                    v=1;
+                    break;
+                }
+            }
+        }
+        if (v==1) break;
+    }
+    //printf("\ncount:%d", count);
+    
+    int exp=3+count;
+    int expo[3];
+    //printf("\nexp:%d\n", exp);
+    
+    if (exp == 0) {expo[0] = 0; expo[1] = 0; expo[2] = 0;}
+    else if (exp == 1) {expo[0] = 0; expo[1] = 0; expo[2] = 1;}
+    else if (exp == 2) {expo[0] = 0; expo[1] = 1; expo[2] = 0;}
+    else if (exp == 3 ) {expo[0] = 0; expo[1] = 1; expo[2] = 1;}
+    else if (exp == -1 || exp==5) {expo[0] = 1; expo[1] = 0; expo[2] = 1;}
+    else if (exp == -2 || exp==6) {expo[0] = 1; expo[1] = 1; expo[2] = 0;}
+    else if (exp == -3 || exp==7) {expo[0] = 1; expo[1] = 1; expo[2] = 1;}
+    else if (exp == -4 || exp==4) {expo[0] = 1; expo[1] = 0; expo[2] = 0;}
+    
+    int mantissa[5]; int m=0;
+    int o;
+    for(o=0; o< 10; o++){
+        if (con[o]==1) break;
+    }
+    
+    o++;
+    
+   
+    for(int q=0; q<n; q++) final[q]=0;
+    
+    for(int t=0; t<3; t++){
+        final[t]=expo[t];
+    }
+    for(; o<index ; o++){
+        if(con[o]!=-1){
+        mantissa[m]=con[o];
+        m++;
+    }
+    }
+
+    
+    for(int w=3, y=0; w<8, y<m; w++, y++){
+        final[w]=mantissa[y];
+    }
+    // for(int g=0; g<8; g++) printf("%d ", final[g]);
+}
+
 
 int main(){
 	 // To store the data of each dataline.
@@ -407,7 +521,7 @@ int main(){
                 char opcode[4];
 
                 while(dataline[i] == ' ' || dataline[i] == '\t') i++;
-                for(;dataline[i] != ' ' && j != 3; i++) opcode[j++] = dataline[i];
+                for(;dataline[i] != ' ' && dataline[i] != '\n'  && j != 4; i++) opcode[j++] = dataline[i];
                 ch=strchr(dataline,'$');
 
                 opcode[j] = '\0';
@@ -715,6 +829,104 @@ int main(){
 
                 }
 
+                //for question 3
+                else if (!strcmp(opcode, "addf") || !strcmp(opcode, "subf")){
+                    char reg1[2], reg2[2], reg3[2];
+                    int bin1[3], bin2[3], bin3[3];
+                    int opcodeBin[5];
+			        //opcodebin stores the bits needed to represent opcode
+
+                    if (!strcmp(opcode, "addf")) toBin(opcodeBin, 16, 5);
+                    else if (!strcmp(opcode, "subf")) toBin(opcodeBin, 17, 5);
+                
+
+                    while(dataline[i] == ' ') i++;
+                    for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
+
+
+                    while(dataline[i] == ' ') i++;
+                    for(int x = 0; x < 2; x++,i++) reg2[x] = dataline[i];
+
+                    while(dataline[i] == ' ') i++;
+                    for(int x = 0; x < 2; x++,i++) reg3[x] = dataline[i];
+
+                    if (typo_reg(reg1)==1 || typo_reg(reg2)==1 || typo_reg(reg3)==1 ){
+
+                            raiseError("Either typo in register(s) or register(s) not defined!", count);
+                    }
+
+                    else if(dataline[i] != '\n'){
+			                 //if last element in the string is not "\n" then there may be possible extra unnecessary elements in the string
+                        raiseError("Unnecessary elements in the instruction!", count);
+                    }
+
+                    regBin(bin1, reg1);
+                    regBin(bin2, reg2);
+                    regBin(bin3, reg3);
+
+                    typeA(opcodeBin, bin1, bin2, bin3);
+
+
+                    for(int x = 0; x < 16; x++){
+                        Ans[count][x]=ans[x];
+                    }
+
+
+
+                }
+
+                else if (!strcmp(opcode, "movf")){
+
+                    float value = atof(ch + 1);
+                    if(value >=0 && value <= 15.75){
+
+                        int final[8];
+                        tobinfloating(value,final,8);
+                        char reg1[2];
+                        int bin1[3];
+                        int opcodeBin[5];
+
+                        if (!strcmp(opcode, "movf")) toBin(opcodeBin, 18, 5);
+                        
+
+                        while(dataline[i] == ' ') i++;
+                        for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
+
+                        i = ch-dataline+1;
+                        for(; dataline[i] != ' ' && dataline[i]!='\n' && dataline[i] != '\0'; i++) continue;
+
+                        if (typo_reg(reg1)==1){
+
+                            raiseError("Either typo in register(s) or register(s) not defined!", count);
+                        }
+
+                        else if(dataline[i] != '\n'){
+
+                            raiseError("Unnecessary elements in the instruction!", count);
+                        }
+
+                        regBin(bin1, reg1);
+
+                        typebf(opcodeBin, bin1, final);
+
+
+                        for(int x = 0; x < 16; x++){
+                            Ans[count][x]=ans[x];
+                        }
+
+
+                    }
+
+                    else{
+
+
+                        raiseError("Illegal immediate value!", count);
+			    //if immediate value is not withtin the given range this error will be raised
+
+                    }
+
+                }
+
                 else{
 
                    raiseError("Typo in instruction!", count);
@@ -725,7 +937,7 @@ int main(){
 
         if(hlt_error2==0){
 
-            raiseError("Halt instruction is missing!", 0);
+            raiseError("Halt instruction is missing!", -1);
         }
 
         else if (hlt_error){

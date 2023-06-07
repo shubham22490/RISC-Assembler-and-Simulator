@@ -260,7 +260,7 @@ void regBin(int bin[], char reg[]){
 void raiseError(char error[], int lineNum){
 
 
-    if(lineNum) strcpy(error_list[lineNum], error);
+    if(lineNum>=0) strcpy(error_list[lineNum], error);
     else strcpy(error_list[130], error);
 
     errorFlag = 1;
@@ -937,7 +937,7 @@ int main(){
 
         if(hlt_error2==0){
 
-            raiseError("Halt instruction is missing!", 0);
+            raiseError("Halt instruction is missing!", -1);
         }
 
         else if (hlt_error){
