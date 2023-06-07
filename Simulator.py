@@ -13,6 +13,8 @@ RegList = [0]*7
 global flag
 flag = [0]*16
 
+global stack = []
+
 memory = dict()
 
 def todeci(num):
@@ -236,6 +238,56 @@ def store(inst):
     memory[mem] = RegList[ir1]
     return
 
+def sqr(ins):
+    global flag
+    ir1 = RegInBin.index(ins[10:13])
+    ir2 = RegInBin.index(ins[13:16])
+    finalv=RegList[ir2]
+    finalv=finalv**2
+    if (finalv< 65536):
+        RegList[ir1]=finalv
+        flag = [0]*16
+    else:
+        RegList[ir1]=0
+        flag[12]=1
+
+
+def cube(ins):
+    global flag
+    ir1 = RegInBin.index(ins[10:13])
+    ir2 = RegInBin.index(ins[13:16])
+    finalv=RegList[ir2]
+    finalv=finalv**3
+    if (finalv< 65536):
+        RegList[ir1]=finalv
+        flag = [0]*16
+    else:
+        RegList[ir1]=0
+        flag[12]=1
+
+def push(ins):
+    global flag
+    ir1 = RegInBin.index(ins[13:16])
+    element=RegList[ir1]
+    stack.append(element)
+    flag = [0]*16
+
+def pushi(ins):
+    global flag
+    immediate= RegInBin.index(ins[9:16])
+    stack.append(immediate)
+    flag = [0]*16
+
+def pop(ins):
+    global flag
+    ir1 = RegInBin.index(ins[13:16])
+    if (len(stack)>0):
+        RegList[ir1]=stack.pop()
+    else:
+        RegList[ir1]=0
+        flag[11] = 1
+
+
 
 def memorydump(instruct,i):
     global memory
@@ -321,6 +373,16 @@ while(j<i and (instructions[j][0:5])!="11010"):
         j=uJmp(instructions[j])
         j+=1
         continue
+    elif(opcode == "10000"):
+        sqr(instructions[j])
+    elif(opcode == "10001"):
+        cube(instructions[j])
+    elif(opcode == "10010"):
+        push(instructions[j])
+    elif(opcode == "10011"):
+        pushi(instructions[j])
+    elif(opcode == "10100"):
+        pop(instructions[j])
     elif (opcode=="11100"):
         if (flag[-3]==1):
             flag = [0]*16

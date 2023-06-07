@@ -225,8 +225,19 @@ void typeE(int opcode[],int binaryvalue[])
     {
         ans[i+9]=binaryvalue[i];
     }
+}
 
-
+void typeG(int opcode[], int reg[])
+{
+    for(int i = 0; i < 5; i++){
+        ans[i] = opcode[i];
+    }
+    for(int i = 5; i <= 12; i++){
+        ans[i] = 0;
+    }
+    for(int i = 0; i<3; i++){
+        ans[i+13] = reg[i];
+    }
 }
 
 
@@ -392,7 +403,7 @@ int tobinfloating(float value, int final[], int n){
     float fr = value-i;
     int arri[5]={0}; int arrf[5]={0};
 
-    
+
     toBin(arri, i, 5);
     int l=0;
     float h=fr;
@@ -403,30 +414,30 @@ int tobinfloating(float value, int final[], int n){
         l++;
     }
 
-    
+
     int con[10];
     int index=0;
     for(int g=0; g<5; g++, index++) con[index]=arri[g];
-        
+
     con[index++]=-1;
-    
+
     for(int g=0; g<l; g++, index++) con[index]=arrf[g];
-    
+
     int flag=0; int count=0;
     int v=0;
     for(int x=0; x<index; x++){
         if (con[x]==-1) flag=1;
         if (con[x]==1 && flag==0){
             for(int j=x+1; j<index; j++){
-                
+
                 if (con[j]==-1) {
                     v=1;
-                    break; 
+                    break;
                 }
                 count++;
             }
         }
-        
+
         else if (flag==1){
             for(int f=x+1; f<index; f++){
                 count--;
@@ -439,11 +450,11 @@ int tobinfloating(float value, int final[], int n){
         if (v==1) break;
     }
     //printf("\ncount:%d", count);
-    
+
     int exp=3+count;
     int expo[3];
     //printf("\nexp:%d\n", exp);
-    
+
     if (exp == 0) {expo[0] = 0; expo[1] = 0; expo[2] = 0;}
     else if (exp == 1) {expo[0] = 0; expo[1] = 0; expo[2] = 1;}
     else if (exp == 2) {expo[0] = 0; expo[1] = 1; expo[2] = 0;}
@@ -452,18 +463,18 @@ int tobinfloating(float value, int final[], int n){
     else if (exp == -2 || exp==6) {expo[0] = 1; expo[1] = 1; expo[2] = 0;}
     else if (exp == -3 || exp==7) {expo[0] = 1; expo[1] = 1; expo[2] = 1;}
     else if (exp == -4 || exp==4) {expo[0] = 1; expo[1] = 0; expo[2] = 0;}
-    
+
     int mantissa[5]; int m=0;
     int o;
     for(o=0; o< 10; o++){
         if (con[o]==1) break;
     }
-    
+
     o++;
-    
-   
+
+
     for(int q=0; q<n; q++) final[q]=0;
-    
+
     for(int t=0; t<3; t++){
         final[t]=expo[t];
     }
@@ -474,7 +485,7 @@ int tobinfloating(float value, int final[], int n){
     }
     }
 
-    
+
     for(int w=3, y=0; w<8, y<m; w++, y++){
         final[w]=mantissa[y];
     }
@@ -634,7 +645,7 @@ int main(){
                 }
 
 
-                else if ( (!strcmp(opcode, "mov") && ch == NULL) || !strcmp(opcode, "div") || !strcmp(opcode, "not") || !strcmp(opcode, "cmp") ){
+                else if ( (!strcmp(opcode, "mov") && ch == NULL) || !strcmp(opcode, "div") || !strcmp(opcode, "not") || !strcmp(opcode, "cmp") || !strcmp(opcode, "sqr") || !strcmp(opcode, "cub")){
 
 
 
@@ -646,6 +657,8 @@ int main(){
                     else if (!strcmp(opcode, "div")) toBin(opcodeBin, 7, 5);
                     else if (!strcmp(opcode, "not")) toBin(opcodeBin, 13, 5);
                     else if (!strcmp(opcode, "cmp")) toBin(opcodeBin, 14, 5);
+                    else if (!strcmp(opcode, "sqr")) toBin(opcodeBin, 16, 5);
+                    else if (!strcmp(opcode, "cub")) toBin(opcodeBin, 17, 5);
 
                     while(dataline[i] == ' ' || dataline[i] == '\t') i++;
                     for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
@@ -838,7 +851,7 @@ int main(){
 
                     if (!strcmp(opcode, "addf")) toBin(opcodeBin, 16, 5);
                     else if (!strcmp(opcode, "subf")) toBin(opcodeBin, 17, 5);
-                
+
 
                     while(dataline[i] == ' ') i++;
                     for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
@@ -887,7 +900,7 @@ int main(){
                         int opcodeBin[5];
 
                         if (!strcmp(opcode, "movf")) toBin(opcodeBin, 18, 5);
-                        
+
 
                         while(dataline[i] == ' ') i++;
                         for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
