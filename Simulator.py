@@ -207,8 +207,10 @@ def toBinF(value):
             break
     o+=1
     bin=[0]*16
+    a=0
     for i in range(8,11):
-        bin[i]=EXPO[8 - i]
+        bin[i]=EXPO[a]
+        a+=1
     z=0
     for x in range(o,11):
         if (mix[x]!=-1) and (z<5):
@@ -217,8 +219,9 @@ def toBinF(value):
     y=11
     for i in range(0,z):
         bin[y+i]=man[i]
-
+    print(bin)
     return bin
+
 
 def addf(inst):
     global flag
@@ -323,6 +326,7 @@ def invert(ins):
             L[i]=0
         else:
             L[i]=1
+    print(L)
     RegList[ir1]=todeci(L)
     flag = [0]*16
 
