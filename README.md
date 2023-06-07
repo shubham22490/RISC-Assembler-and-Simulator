@@ -17,8 +17,8 @@ assembly code.
 **Supported Instructions**
 
 The program supports the following assembly instructions:
-* Type A Instructions: add, sub, mul, xor, or, and 
-* Type B Instructions: mov, rs, ls
+* Type A Instructions: add, sub, mul, xor, or, and, addf, subf
+* Type B Instructions: mov, rs, ls, movf
 * Type C Instructions: div, not, cmp, sqr, cub
 * Type D Instructions: jmp, jlt, jgt, je, hlt
 * Type E Instructions: jmp, jlt, jgt, je, hltwith binary values
@@ -36,7 +36,8 @@ instructions encoded in it.
 2. Secondly, we compile the main function and store the corresponding machine code in
 Ans.txt file that is created.
 
-
+**Floating Point Operations**
+typebf, addf, subf and movf are used to handle the float operations and store them in the given format.
 **Error Handling**
 
 
@@ -83,13 +84,16 @@ This program is designed to take input as machine code and then perform the oper
  * toBin(n, bits): Converts a decimal number to binary represented as a list of bits with the specified number of bits.
 3. We write the simulation program for all the instructions previously mentioned in the assembler
  * add(inst): Executes an add instruction by adding the values of two registers and storing the result in another register.
+ * addf(inst): Executes an add instruction by adding the values of two registers(float numbers) and storing the result in another register.
  * sub(inst): Executes a subtract instruction by subtracting the value of one register from another and storing the result in another register.
+ * subf(inst): Executes a subtract instruction by subtracting the value of one register from another(float numbers) and storing the result in another register.
  * mul(inst): Executes a multiply instruction by multiplying the values of two registers and storing the result in another register.
  * xor(inst): Executes a bitwise XOR instruction by performing a bitwise XOR operation between two registers and storing the result in another register.
  * Or(inst): Executes a bitwise OR instruction by performing a bitwise OR operation between two registers and storing the result in another register.
  * And(inst): Executes a bitwise AND instruction by performing a bitwise AND operation between two registers and storing the result in another register.
  * uJmp(inst): Executes an unconditional jump instruction by setting the program counter to the specified memory address.
  * movi(ins): Executes a move immediate instruction by storing an immediate value in a register.
+ * movf(ins): Executes a move immediate instruction by storing an immediate floating point value in a register.
  * leftshift(ins): Executes a left shift instruction by shifting the bits of a register to the left by a specified number of positions.
  * rightshift(ins): Executes a right shift instruction by shifting the bits of a register to the right by a specified number of positions.
  * mov(ins): Executes a move instruction by copying the value of one register to another register or the flag register.
