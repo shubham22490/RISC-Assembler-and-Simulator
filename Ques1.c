@@ -240,6 +240,18 @@ void typeG(int opcode[], int reg[])
     }
 }
 
+void typeH(int opcode[], int bin[])
+{
+    for(int i = 0; i < 5; i++){
+        ans[i] = opcode[i];
+    }
+    for(int i = 5; i < 9; i++){
+        ans[i] = 0;
+    }
+    for(int i = 0; i<7; i++){
+        ans[i+9] = bin[i];
+    }
+}
 
 //Function to convert number to binary in specific number of bits.
 int toBin(int var[], int n, int bits){
