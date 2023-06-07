@@ -647,7 +647,7 @@ int main(){
                         toBin(bin2, value, 7);
                         // for(int i = 0; i < 7; i++) printf("%d ", bin2[i]);
                         int opcodeBin[5];
-                        if(!strcmp(opcode, "pus")) toBin(opcodeBin, 19, 7);
+                        if(!strcmp(opcode, "pus")) toBin(opcodeBin, 19, 5);
                         while(dataline[i] == ' ' || dataline[i] == '\t') i++;
                         i = ch-dataline+1;
                         for(; dataline[i] != ' ' && dataline[i]!='\n' && dataline[i] != '\0'; i++) continue;

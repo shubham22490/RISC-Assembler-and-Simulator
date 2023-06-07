@@ -13,7 +13,8 @@ RegList = [0]*7
 global flag
 flag = [0]*16
 
-global stack = []
+global stack
+stack = []
 
 memory = dict()
 
@@ -29,15 +30,19 @@ def todeci(num):
 
 
 def toBin(n, bits):
-    var = [0]*bits
+    if type(n)==int:
+        var = [0]*bits
 
-    j = bits - 1
-    while n > 0:
-        var[j] = n % 2
-        n //= 2
-        j -= 1
+        j = bits - 1
+        while n > 0:
+            var[j] = n % 2
+            n //= 2
+            j -= 1
 
-    return var
+        return var
+    elif type(n)==float:
+        var=toBinF(n)
+        return var
 
 # print(todeci([0,0,1,0]))
 
@@ -126,19 +131,139 @@ def uJmp(inst):
 
     return pc
 
-def movi(ins):
+def toDeciF(list):
+    exp=[0]*3
+    for i in range(0,3):
+        exp[i]=list[i]
+    Exp=todeci(exp)
+
+    e=Exp-3
+    man=[0]*5
+    for i in range(3,8):
+        man[i-3]=list[i]
+    sum=0
+    a=1
+    for i in range(0,5):
+        sum+=man[i]*(2**(-a))
+        a=a+1
+    final=(1+sum)(2*e)
+    return final
+
+def toBinF(value):
+    i=int(value)
+    f=value-i
+    arri=toBin(i,5)
+
+    arrf=[0]*5
+    a=0
+    while(f>0):
+        f=f*2
+        arrf[a]=int(f)
+        f=f-int(f)
+        a+=1
+
+
+    mix=[0]*11
+    index=0
+    for i in range(0,5):
+        mix[index]=arri[i]
+        index+=1
+    mix[index]=-1
+    index+=1
+    for i in range(0,5):
+        mix[index]=arrf[i]
+        index+=1
+
+    count=0
+    flag=0
+    v=0
+    for i in range(0,11):
+        if mix[i]==-1:
+            flag=1
+        if (mix[i]==1) and (flag==0):
+            for j in range(i+1, 11):
+                if mix[j]==-1:
+                    v=1
+                    break
+                count+=1
+
+        elif flag==1:
+            for k in range(i+1, 11):
+                count=count-1
+                if mix[k]==1:
+                    v=1
+                    break
+        if v==1:
+            break
+    exp=3+count
+
+    EXPO=toBin(exp,3)
+
+    man=[0]*5
+    o=0
+    for i in range(0,11):
+        if mix[i]==1:
+            o=i
+            break
+    o+=1
+    bin=[0]*16
+    for i in range(8,11):
+        bin[i]=EXPO[8 - i]
+    z=0
+    for x in range(o,11):
+        if (mix[x]!=-1) and (z<5):
+            man[z]=mix[x]
+            z+=1
+    y=11
+    for i in range(0,z):
+        bin[y+i]=man[i]
+
+    return bin
+
+def addf(inst):
     global flag
-    ir1 = RegInBin.index(ins[6:9])
-    imm = RegInBin.index(ins[9:16])
-    immediate = todeci(imm)
-    RegList[ir1] = imm
-    flag = [0]*16
+    ir1 = RegInBin.index(inst[7:10])
+    ir2 = RegInBin.index(inst[10:13])
+    ir3 = RegInBin.index(inst[13:16])
+
+
+    val = RegList[ir2]+RegList[ir3]
+
+    if(val >= 0 and val < 64):
+        RegList[ir1] = val
+        flag = [0]*16
+    else:
+        RegList[ir1] = 0
+        flag[12] = 1
+
+def subf(inst):
+    global flag
+    ir1 = RegInBin.index(inst[7:10])
+    ir2 = RegInBin.index(inst[10:13])
+    ir3 = RegInBin.index(inst[13:16])
+
+    val = RegList[ir2] - RegList[ir3]
+
+    if(val >= 0):
+        RegList[ir1] = val
+        flag = [0]*16
+    else:
+        RegList[ir1] = 0
+        flag = [0]*16
+        flag[12] = 1
+
+def movf(inst):
+    global flag
+    ir1 = RegInBin.index(inst[5:8])
+    d=toDeciF(inst[8:])
+    RegList[ir1]=d
+    flag = [0]*1
 
 
 def leftshift(ins):
     global flag
     ir1 = RegInBin.index(ins[6:9])
-    imm = RegInBin.index(ins[9:16])
+    imm = ins[9:16]
     immediate = todeci(imm)
 
     val = RegList[ir1] << imm
@@ -148,7 +273,7 @@ def leftshift(ins):
 def rightshift(ins):
     global flag
     ir1 = RegInBin.index(ins[6:9])
-    imm = RegInBin.index(ins[9:16])
+    imm = ins[9:16]
     immediate = todeci(imm)
     val = RegList[ir1] >> imm
     RegList[ir1] = val
@@ -269,12 +394,13 @@ def push(ins):
     global flag
     ir1 = RegInBin.index(ins[13:16])
     element=RegList[ir1]
+
     stack.append(element)
     flag = [0]*16
 
 def pushi(ins):
     global flag
-    immediate= RegInBin.index(ins[9:16])
+    immediate = todeci(ins[9:16])
     stack.append(immediate)
     flag = [0]*16
 
@@ -383,6 +509,12 @@ while(j<i and (instructions[j][0:5])!="11010"):
         pushi(instructions[j])
     elif(opcode == "10100"):
         pop(instructions[j])
+    elif (opcode=="10000"):
+        addf(instructions[j])
+    elif (opcode=="10001"):
+        subf(instructions[j])
+    elif (opcode=="10010"):
+        movf(instructions[j])
     elif (opcode=="11100"):
         if (flag[-3]==1):
             flag = [0]*16
