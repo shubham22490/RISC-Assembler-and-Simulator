@@ -248,7 +248,7 @@ void typeH(int opcode[], int bin[])
     for(int i = 5; i < 9; i++){
         ans[i] = 0;
     }
-    for(int i = 0; i<7; i++){
+    for(int i = 0; i<8; i++){
         ans[i+9] = bin[i];
     }
 }
@@ -601,6 +601,69 @@ int main(){
 
 
 
+                }
+
+                else if ( (!strcmp(opcode, "pus") && ch == NULL) || !strcmp(opcode, "pop") ){
+                    char reg1[2];
+                    int bin1[3];
+                    int opcodeBin[5];
+			//opcodebin stores the bits needed to represent opcode
+
+                    if (!strcmp(opcode, "pus")) toBin(opcodeBin, 18, 5);
+                    else if (!strcmp(opcode, "pop")) toBin(opcodeBin, 20, 5);
+
+                    while(dataline[i] == ' ' || dataline[i] == '\t') i++;
+                    for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
+
+                    if (typo_reg(reg1)==1 ){
+
+                            raiseError("Either typo in register(s) or register(s) not defined!", count);
+                    }
+
+
+
+                    else if(dataline[i] != '\n'){
+			                 //if last element in the string is not "\n" then there may be possible extra unnecessary elements in the string
+                        raiseError("Unnecessary elements in the instruction!", count);
+                    }
+
+                    regBin(bin1, reg1);
+
+                    typeG(opcodeBin, bin1);
+
+                    for(int x = 0; x < 16; x++){
+                        Ans[count][x]=ans[x];
+                    }
+                }
+
+
+                else if (!strcmp(opcode, "pus") && ch!= NULL){
+
+			//atoi takes $number and extracts out the number from it
+
+                    int value = atoi(ch + 1);
+                    if(value >=0 && value < 128){
+                        int bin2[7];
+                        toBin(bin2, value, 7);
+                        // for(int i = 0; i < 7; i++) printf("%d ", bin2[i]);
+                        int opcodeBin[5];
+                        if(!strcmp(opcode, "pus")) toBin(opcodeBin, 19, 7);
+                        while(dataline[i] == ' ' || dataline[i] == '\t') i++;
+                        i = ch-dataline+1;
+                        for(; dataline[i] != ' ' && dataline[i]!='\n' && dataline[i] != '\0'; i++) continue;
+                        typeH(opcodeBin, bin2);
+                        for(int x = 0; x < 16; x++){
+                            Ans[count][x]=ans[x];
+                        }
+                    }
+
+                    else{
+
+
+                        raiseError("Illegal immediate value!", count);
+			    //if immediate value is not withtin the given range this error will be raised
+
+                    }
                 }
 
                 else if ((!strcmp(opcode, "mov") && ch != NULL) || !strcmp(opcode,"rs")|| !strcmp(opcode,"ls") ){
