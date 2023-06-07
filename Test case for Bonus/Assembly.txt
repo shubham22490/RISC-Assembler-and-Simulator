@@ -1,0 +1,5 @@
+pus $4
+pop R1
+sqr R2 R1
+cub R3 R1
+hlt
