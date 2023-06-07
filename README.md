@@ -60,3 +60,29 @@ any change in the format may result in errors or unexpected behavior.
 variations may not be recognized.
 * The program does not perform extensive error checking or syntax analysis. It assumes that
 the input assembly code is valid and all other differences are treated as errors.
+
+
+
+# **Simulator Working**
+This program is designed to take input as machine code and then perform the operations on the registers on the basis of the opcode.
+
+**Code Structure**
+1. Importing Modules and Setting up Global Variables
+ * Firstly we import two modules sys and math.
+ * Then we set up the following global variables 
+   .  pc: Program Counter, which keeps track of the current instruction being executed.
+   .  RegInBin: A list of binary representations of registers.
+   .  RegList: A list representing the registers, initially filled with zeros.
+   .  flag: A list representing the flags, initially filled with zeros.
+   .  memory: A dictionary representing the memory storage. 
+2. Converter Functions
+ * todeci(num): Converts a binary number represented as a list of bits to decimal.
+ * toBin(n, bits): Converts a decimal number to binary represented as a list of bits with the specified number of bits.
+3. We write the simulation program for all the instructions previously mentioned in the assembler
+ * Each function takes an instruction (inst) as input and performs the corresponding operation on the registers, flags, or memory.
+4. Memory Dump and Register Data Print
+ * memorydump(instruct, i): Prints the contents of the memory.
+ * print_me(lst): Prints the given list.
+ * regDump(lineNum): Prints the register values along with the program counter and flags. 
+5. Main Loop
+ * Finally we execute the main loop and keep processing on instructions until we reach halt
