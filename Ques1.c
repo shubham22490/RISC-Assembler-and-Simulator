@@ -313,7 +313,7 @@ void initial(){
 
 
         char first_word[50];
-        while(dataline[i] == ' ') i++;
+        while(dataline[i] == ' ' || dataline[i] == '\t') i++;
         for(;dataline[i] != ' ' && dataline[i] != '\n' && dataline[i] != '\0'; i++) first_word[j++] = dataline[i];
         first_word[j] = '\0';
 
@@ -344,7 +344,7 @@ void initial(){
 
         else{
             j = 0, i=0;
-            while(dataline[i] == ' ') i++;
+            while(dataline[i] == ' ' || dataline[i] == '\t') i++;
             for(; dataline[i] != ':'; i++) first_word[j++] = dataline[i];
             first_word[j] = '\0';
             create(&headLabel, first_word, lineWithoutVar);
@@ -428,20 +428,23 @@ int main(){
                     else if (!strcmp(opcode, "and")) toBin(opcodeBin, 12, 5);
 
 
-                    while(dataline[i] == ' ') i++;
+                    while(dataline[i] == ' ' || dataline[i] == '\t') i++;
                     for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
 
 
-                    while(dataline[i] == ' ') i++;
+                    while(dataline[i] == ' ' || dataline[i] == '\t') i++;
                     for(int x = 0; x < 2; x++,i++) reg2[x] = dataline[i];
 
-                    while(dataline[i] == ' ') i++;
+                    while(dataline[i] == ' ' || dataline[i] == '\t') i++;
                     for(int x = 0; x < 2; x++,i++) reg3[x] = dataline[i];
+                    while(dataline[i] == ' ' || dataline[i] == '\t') i++;
 
                     if (typo_reg(reg1)==1 || typo_reg(reg2)==1 || typo_reg(reg3)==1 ){
 
                             raiseError("Either typo in register(s) or register(s) not defined!", count);
                     }
+
+
 
                     else if(dataline[i] != '\n'){
 			                 //if last element in the string is not "\n" then there may be possible extra unnecessary elements in the string
@@ -478,7 +481,7 @@ int main(){
                         else if (!strcmp(opcode, "rs")) toBin(opcodeBin, 8, 5);
                         else if (!strcmp(opcode, "ls")) toBin(opcodeBin, 9, 5);
 
-                        while(dataline[i] == ' ') i++;
+                        while(dataline[i] == ' ' || dataline[i] == '\t') i++;
                         for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
 
                         i = ch-dataline+1;
@@ -530,10 +533,10 @@ int main(){
                     else if (!strcmp(opcode, "not")) toBin(opcodeBin, 13, 5);
                     else if (!strcmp(opcode, "cmp")) toBin(opcodeBin, 14, 5);
 
-                    while(dataline[i] == ' ') i++;
+                    while(dataline[i] == ' ' || dataline[i] == '\t') i++;
                     for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
 
-                    while(dataline[i] == ' ') i++;
+                    while(dataline[i] == ' ' || dataline[i] == '\t') i++;
 			//isflag determines if it has been setup or not
                     int isFlag = 0;
 			//if FLAGS is initialised register code will be 111.
@@ -545,8 +548,11 @@ int main(){
                             isFlag = 1;
                             i = i+5;
 
+
                     }
                     if(!isFlag) for(int x = 0; x < 2; x++,i++) reg2[x] = dataline[i];
+
+                    while(dataline[i] == ' ' || dataline[i] == '\t') i++;
 
 
                     if(isFlag && strcmp(opcode, "mov"))
@@ -616,15 +622,16 @@ int main(){
                     i++;
                     char label[50];
                     int x=0;
-                    while(dataline[i] == ' ') i++;
+                    while(dataline[i] == ' ' || dataline[i] == '\t') i++;
                     //for(;dataline[i] != ' '; i++) label[x++] = dataline[i];
-                    for(int y=i;(dataline[y]!='\n');y++)
+                    for(int y=i;(dataline[y]!='\n' && dataline[y]!=' ' && dataline[y] != '\t');y++)
                     {
                         label[x]=dataline[y];
                         x++;
 
                     }
                     label[x]='\0';
+                    while(dataline[i] == ' ' || dataline[i] == '\t') i++;
 			//line_num to check the line of label and valvar to check for variable line
                     int line_num = checkMember(&headLabel, label);
                     int valVar = checkMember(&headVar, label);
@@ -661,17 +668,18 @@ int main(){
                     if(!strcmp(opcode, "ld")) toBin(opcodeBin, 4, 5);
                     else if(!strcmp(opcode, "st")) toBin(opcodeBin, 5, 5);
 
-                    while(dataline[i] == ' ') i++;
+                    while(dataline[i] == ' ' || dataline[i] == '\t') i++;
                     for(int x = 0; x < 2; x++,i++) reg1[x] = dataline[i];
                     regBin(bin1, reg1);
 
                     char variable[50];
                     int x=0;
-                    while(dataline[i] == ' ') i++;
+                    while(dataline[i] == ' ' || dataline[i] == '\t') i++;
                     //for(;dataline[i] != ' '; i++) variable[x++] = dataline[i];
 
-                    for(int y=i;(dataline[y]!='\n');y++) variable[x++]=dataline[y];
+                    for(int y=i;(dataline[y]!='\n' && dataline[y]!=' ' && dataline[y] != '\t');y++) variable[x++]=dataline[y];
                     variable[x]='\0';
+                    while(dataline[i] == ' ' || dataline[i] == '\t') i++;
 
                     int valVar = checkMember(&headVar, variable);
                     int valLabel = checkMember(&headLabel, variable);
