@@ -1,7 +1,0 @@
-mov R1 $12
-rs R1 $12
-ls R1 $13
-add R1 R2
-mov R2 $100
-mul R3 R1 R2
-hlt
